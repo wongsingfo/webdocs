@@ -14,8 +14,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
+## argument for path()
+# 1. route
+# 2. view
+# 3. kwargs
+# 4. name: Naming your URL lets you refer to it unambiguously from elsewhere 
+#    in Django, especially from within templates. This powerful feature allows 
+#    you to make global changes to the URL patterns of your project while only touching a single file.
 
 urlpatterns = [
+	path('edit/', include('edit.urls')),
     path('admin/', admin.site.urls),
 ]
