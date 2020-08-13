@@ -30,7 +30,12 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# Some of these applications make use of at least one database table, though,
+# so we need to create the tables in the database before we can use them. 
+# To do that, run the following command: 
+#    python manage.py migrate
 INSTALLED_APPS = [
+    'edit.apps.EditConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,6 +82,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # If you are not using SQLite as your database, additional settings such as
+        # USER, PASSWORD, and HOST must be added.
+        # 'USER': 'mydatabaseuser',
+        # 'PASSWORD': 'mypassword',
+        # 'HOST': '127.0.0.1',
+        # 'PORT': '5432',
     }
 }
 
@@ -105,7 +116,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Time Zone: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
