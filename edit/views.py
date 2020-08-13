@@ -30,9 +30,13 @@ def edit(request, document_id):
         #  https://docs.djangoproject.com/en/3.1/topics/auth/default/#how-to-log-a-user-in
         if not request.user.is_authenticated:
             return HttpResponse("Denied!")
-        document.title = request.POST['title']
-        document.save()
-        return HttpResponseRedirect('/edit')
+        try:
+            document.body = request.POST['body']
+            document.save()
+        except KeyError:
+            return HttpResponse("POST failed")
+        else:
+            return HttpResponseRedirect('/edit')
     else:
         return render(request, "edit/edit.html", {
             'document': document

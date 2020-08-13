@@ -283,6 +283,18 @@ function saveInBrowser() {
     console.log("Saved");
 }
 
+function postToServer(csrf_token, url) {
+    let text = editor.getValue();
+    let data = {
+        'body': text,
+        'csrfmiddlewaretoken': csrf_token,
+    };
+    $.post(url, data, function(data) {
+        swal("Saved", "Your Document has been saved.", "success");
+        console.log("Saved " + data);
+    });
+}
+
 function toggleNightMode(button) {
     button.classList.toggle('selected');
     document.getElementById('toplevel').classList.toggle('nightmode');
@@ -346,9 +358,12 @@ function start() {
                 ))
             );
         }
-    } else if (localStorage.getItem('content')) {
+    }
+    /*  TODO: when to load from local storage?
+    else if (localStorage.getItem('content')) {
         editor.setValue(localStorage.getItem('content'));
     }
+     */
     update(editor);
     editor.focus();
     document.getElementById('fileInput').addEventListener('change', openFile, false);
