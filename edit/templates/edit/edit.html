@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ document.title }}</title>
+</head>
+<body>
+    <h1>{{ document.title }}</h1>
+    {{ document.body }}
+
+    <form action="{% url "edit" document.id %}" method="post">
+        <!--  Cross Site Request Forgeries  Attack  -->
+        {% csrf_token %}
+
+        <label>
+            <input type="text" name="title" value="{{ document.title }}">
+        </label>
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>

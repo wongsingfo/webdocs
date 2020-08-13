@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
 from .models import Document
 
@@ -17,13 +17,20 @@ def index(request):
     return HttpResponse(output)
 
 
-def markdown_edit(request, document_id):
+def edit(request, document_id):
+
     # or shortcut: get_object_or_404(Document, pk=document_id)
     try:
         document = Document.objects.get(pk=document_id)
     except Document.DoesNotExist:
         raise Http404("Document %s does not exist" % document_id)
 
-    return render(request, "edit/markdown_edit.html", {
-        'document': document
-    })
+    if request.method == "POST":
+        print(request.POST)
+        document.title = request.POST['title']
+        document.save()
+        return HttpResponseRedirect('/edit')
+    else:
+        return render(request, "edit/edit.html", {
+            'document': document
+        })

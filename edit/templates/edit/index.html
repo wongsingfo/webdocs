@@ -1,9 +1,10 @@
 {% if latest_documents %}
+    <p>Document{{ latest_documents|length|pluralize }}:</p>
     <ul>
     {% for document in latest_documents %}
         <li>
-            <a href="{% url 'Markdown Editor' document.id %}">
-                {{ document.body }}
+            <a href="{% url 'edit' document.id %}">
+                {{ document.title }} -- {{ document.body }}
             </a>
         </li>
     {% endfor %}
