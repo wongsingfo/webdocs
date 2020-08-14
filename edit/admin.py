@@ -8,7 +8,7 @@ from .models import Document
 class DocumentAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,      {'fields': ['title']}),
-        ('Details', {'fields': ['body', 'last_modified']}),
+        ('Details', {'fields': ['body']}),
     ]
     list_display = ('title', 'last_modified')
     list_filter = ['last_modified']
