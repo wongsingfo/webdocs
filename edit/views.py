@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
+from django.views import View
+
 from .models import Document
 
 
@@ -17,19 +20,20 @@ def index(request):
     return HttpResponse(output)
 
 
-def edit(request, document_id):
+class EditView(View):
+    def get(self, request, document_id):
+        document = get_object_or_404(Document, pk=document_id)
+        return render(request, "edit/edit.html", {
+            'document': document
+        })
 
-    # or shortcut: get_object_or_404(Document, pk=document_id)
-    try:
-        document = Document.objects.get(pk=document_id)
-    except Document.DoesNotExist:
-        raise Http404("Document %s does not exist" % document_id)
-
-    if request.method == "POST":
+    # @login_required
+    def post(self, request, document_id):
         # TODO: login
         #  https://docs.djangoproject.com/en/3.1/topics/auth/default/#how-to-log-a-user-in
         if not request.user.is_authenticated:
             return HttpResponse("Denied!")
+        document = get_object_or_404(Document, pk=document_id)
         try:
             document.body = request.POST['body']
             document.save()
@@ -37,7 +41,3 @@ def edit(request, document_id):
             return HttpResponse("POST failed")
         else:
             return HttpResponseRedirect('/edit')
-    else:
-        return render(request, "edit/edit.html", {
-            'document': document
-        })

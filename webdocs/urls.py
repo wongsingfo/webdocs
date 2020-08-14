@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-## argument for path()
+# argument for path()
 # 1. route
 # 2. view
 # 3. kwargs
@@ -25,6 +25,6 @@ from django.urls import path, include
 #    you to make global changes to the URL patterns of your project while only touching a single file.
 
 urlpatterns = [
-	path('edit/', include('edit.urls')),
+    path('edit/', include('edit.urls')),
     path('admin/', admin.site.urls),
 ]
