@@ -245,11 +245,20 @@
      display: none !important;
  }
 
- .focused {
+ .focused-out {
     display: block;
     width:50%;
     margin-left: -25%;
-    padding-left: 0%;
+    padding-left: 0;
+    left:0;
+    border-left: 0 !important;
+ }
+
+ .focused-in {
+    display: block;
+    width:50%;
+    margin-left: +25%;
+    padding-left: 0;
     left:0;
     border-left: 0 !important;
  }

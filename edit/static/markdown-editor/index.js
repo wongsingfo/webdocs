@@ -300,11 +300,35 @@ function toggleNightMode(button) {
     document.getElementById('toplevel').classList.toggle('nightmode');
 }
 
-function toggleReadMode(button) {
-    button.classList.toggle('selected');
-    document.getElementById('out').classList.toggle('focused');
-    document.getElementById('in').classList.toggle('hidden');
-}
+const toggleReadMode = (function() {
+    let state = 0;
+
+    return function(button) {
+        const in_classList = document.getElementById('in').classList;
+        const out_classList = document.getElementById('out').classList;
+        switch (state) {
+            case 0:
+                out_classList.add('focused-out');
+                in_classList.add('hidden');
+                state = 1;
+                button.classList.toggle('selected');
+                break;
+            case 1:
+                out_classList.remove('focused-out');
+                out_classList.add('hidden')
+                in_classList.remove('hidden');
+                in_classList.add('focused-in');
+                state = 2;
+                break;
+            case 2:
+                in_classList.remove('focused-in');
+                out_classList.remove('hidden');
+                state = 0;
+                button.classList.toggle('selected');
+                break;
+        }
+    };
+})();
 
 function toggleSpellCheck(button) {
     button.classList.toggle('selected');
