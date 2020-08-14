@@ -112,7 +112,8 @@
      #in, #out {
         margin: 0;
         left: 0;
-        width: 95%;
+        width: 100%;
+        box-sizing: border-box;
      }
 
      #in {
