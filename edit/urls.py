@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('<int:document_id>/', views.EditView.as_view(), name="edit"),
+    path('<int:document_id>/image', views.ImageUploadView.as_view(), name="upload_image")
 ]

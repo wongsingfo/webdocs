@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 from django.template import loader
 from django.views import View
 
-from .models import Document
+from .forms import DocumentForm, ImageForm
+from .models import Document, Image
 
 
 # Create your views here.
@@ -33,11 +34,33 @@ class EditView(View):
         #  https://docs.djangoproject.com/en/3.1/topics/auth/default/#how-to-log-a-user-in
         if not request.user.is_authenticated:
             return HttpResponse("Denied!")
+
         document = get_object_or_404(Document, pk=document_id)
-        try:
-            document.body = request.POST['body']
+        form = DocumentForm(request.POST)
+        if form.is_valid():
+            document.body = form.cleaned_data['body']
             document.save()
-        except KeyError:
-            return HttpResponse("POST failed")
-        else:
             return HttpResponseRedirect('/edit')
+        else:
+            return HttpResponseBadRequest("invalid data")
+
+
+class ImageUploadView(View):
+
+    def get(self, request, document_id):
+        document = get_object_or_404(Document, pk=document_id)
+        form = ImageForm(request.POST, request.FILES)
+        return render(request, "edit/image.html", {
+            "form": form,
+            "document": document,
+        })
+
+    def post(self, request, document_id):
+        document = get_object_or_404(Document, pk=document_id)
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = Image(document=document, image=form.cleaned_data['image'])
+            image.save()
+            return HttpResponse(image.image.url)
+        else:
+            return HttpResponseBadRequest("invalid data")
