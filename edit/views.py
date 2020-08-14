@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 from django.template import loader
+from django.utils.datetime_safe import datetime
 from django.views import View
 
 from .forms import DocumentForm, ImageForm
@@ -39,6 +40,7 @@ class EditView(View):
         form = DocumentForm(request.POST)
         if form.is_valid():
             document.body = form.cleaned_data['body']
+            document.last_modified = datetime.now()
             document.save()
             return HttpResponseRedirect('/edit')
         else:

@@ -15,7 +15,7 @@ from django.utils.text import slugify, get_valid_filename
 class Document(models.Model):
     title = models.CharField(max_length=30)
     body = models.TextField(blank=True)
-    last_modified = models.DateTimeField()
+    last_modified = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.title
