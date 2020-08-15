@@ -40,7 +40,7 @@ class EditView(View):
         form = DocumentForm(request.POST)
         if form.is_valid():
             document.body = form.cleaned_data['body']
-            document.last_modified = datetime.now()
+            document.last_modified = timezone.now()
             document.save()
             return HttpResponseRedirect('/edit')
         else:
