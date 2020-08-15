@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 from django.template import loader
+from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from django.views import View
 
@@ -11,15 +12,26 @@ from .models import Document, Image
 
 # Create your views here.
 
-def index(request):
-    latest_documents = Document.objects.order_by('-last_modified')[:5]
-    template = loader.get_template('edit/index.html')
-    context = {
-        'latest_documents': latest_documents
-    }
-    output = template.render(context, request)
-    # or shortcut reader(request, 'xxx.html', {context ...} )
-    return HttpResponse(output)
+class IndexView(View):
+
+    def get(self, request):
+        latest_documents = Document.objects.order_by('-last_modified')[:20]
+        template = loader.get_template('edit/index.html')
+        form = DocumentForm()
+        context = {
+            'latest_documents': latest_documents,
+            'form': form,
+        }
+        output = template.render(context, request)
+        # or shortcut reader(request, 'xxx.html', {context ...} )
+        return HttpResponse(output)
+
+    def post(self, request):
+        form = DocumentForm(request.POST)
+        if not form.is_valid():
+            return HttpResponseBadRequest("invalid data")
+        form.save()
+        return HttpResponseRedirect("/edit")
 
 
 class EditView(View):

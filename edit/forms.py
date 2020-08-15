@@ -2,9 +2,13 @@ from django import forms
 from .models import Document, Image
 
 
+# field docs: https://docs.djangoproject.com/en/3.1/ref/forms/fields/#charfield
+# - When the Form is valid, cleaned_data will include a default null value for optional fields.
+
+# https://docs.djangoproject.com/en/3.1/topics/forms/modelforms/#the-save-method
+
 class DocumentForm(forms.ModelForm):
-    title = forms.CharField(max_length=30, required=False)
-    body = forms.Textarea()
+    body = forms.CharField(required=False)
 
     class Meta:
         model = Document
@@ -12,8 +16,6 @@ class DocumentForm(forms.ModelForm):
 
 
 class ImageForm(forms.ModelForm):
-    image = forms.ImageField()
-
     class Meta:
         model = Image
-        fields = ('image',)
+        fields = '__all__'

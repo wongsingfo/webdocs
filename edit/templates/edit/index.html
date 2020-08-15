@@ -21,4 +21,10 @@
 {% else %}
     <p> No documents are available. </p>
 {% endif %}
+
+    <form action="{% url 'index' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
 </body>
