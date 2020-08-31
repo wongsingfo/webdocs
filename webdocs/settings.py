@@ -25,7 +25,7 @@ SECRET_KEY = 'n@&v$vf+3)y5@3ew=k5l051-ca^fk3bf8*5xpcs9xd2v(6+1zb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.1.150", "*"]
 
 
 # Application definition
@@ -35,7 +35,7 @@ ALLOWED_HOSTS = []
 # To do that, run the following command: 
 #    python manage.py migrate
 INSTALLED_APPS = [
-    'edit.apps.EditConfig',
+    'page.apps.EditConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

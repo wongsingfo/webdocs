@@ -27,6 +27,6 @@ from django.urls import path, include
 #    you to make global changes to the URL patterns of your project while only touching a single file.
 
 urlpatterns = [
-    path('edit/', include('edit.urls')),
+    path('page/', include('page.urls')),
     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

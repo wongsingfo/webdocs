@@ -12,7 +12,7 @@
     <ul>
     {% for document in latest_documents %}
         <li>
-            <a href="{% url 'edit' document.id %}">
+            <a href="{% url 'page' document.id %}">
                 [{{ document.last_modified }}] - {{ document.title }}
             </a>
         </li>

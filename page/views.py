@@ -16,7 +16,7 @@ class IndexView(View):
 
     def get(self, request):
         latest_documents = Document.objects.order_by('-last_modified')[:20]
-        template = loader.get_template('edit/index.html')
+        template = loader.get_template('page/index.html')
         form = DocumentForm()
         context = {
             'latest_documents': latest_documents,
@@ -31,13 +31,13 @@ class IndexView(View):
         if not form.is_valid():
             return HttpResponseBadRequest("invalid data")
         form.save()
-        return HttpResponseRedirect("/edit")
+        return HttpResponseRedirect("/page")
 
 
 class EditView(View):
     def get(self, request, document_id):
         document = get_object_or_404(Document, pk=document_id)
-        return render(request, "edit/edit.html", {
+        return render(request, "page/edit.html", {
             'document': document
         })
 
@@ -54,7 +54,7 @@ class EditView(View):
             document.body = form.cleaned_data['body']
             document.last_modified = timezone.now()
             document.save()
-            return HttpResponseRedirect('/edit')
+            return HttpResponseRedirect('/page')
         else:
             return HttpResponseBadRequest("invalid data")
 
@@ -64,7 +64,7 @@ class ImageUploadView(View):
     def get(self, request, document_id):
         document = get_object_or_404(Document, pk=document_id)
         form = ImageForm(request.POST, request.FILES)
-        return render(request, "edit/image.html", {
+        return render(request, "page/image.html", {
             "form": form,
             "document": document,
         })
