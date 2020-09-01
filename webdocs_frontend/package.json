@@ -1,0 +1,70 @@
+{
+  "name": "webdocs_frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "axios": "^0.20.0",
+    "bootstrap": "^4.5.2",
+    "bootstrap-vue": "^2.16.0",
+    "bootswatch": "^4.5.2",
+    "core-js": "^3.6.5",
+    "dompurify": "^2.0.14",
+    "element-resize-detector": "^1.2.1",
+    "file-icons-js": "^1.0.3",
+    "flowchart.js": "^1.14.0",
+    "fuzzaldrin": "^2.1.0",
+    "github-markdown-css": "^4.0.0",
+    "html-tags": "^3.1.0",
+    "katex": "^0.12.0",
+    "mermaid": "^8.7.0",
+    "popper.js": "^1.16.1",
+    "prismjs": "^1.21.0",
+    "register-service-worker": "^1.7.1",
+    "snabbdom": "0.7.3",
+    "snabbdom-to-html": "5.1.1",
+    "snapsvg": "^0.5.1",
+    "turndown": "^6.0.0",
+    "turndown-plugin-gfm": "^1.0.2",
+    "underscore": "^1.11.0",
+    "vega": "^5.15.0",
+    "vega-embed": "^6.11.1",
+    "vega-lite": "^4.14.1",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0",
+    "vuex": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-pwa": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
+    "@vue/cli-plugin-vuex": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/eslint-config-standard": "^5.1.2",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-vue": "^6.2.2",
+    "lint-staged": "^9.5.0",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,vue}": [
+      "vue-cli-service lint",
+      "git add"
+    ]
+  }
+}
