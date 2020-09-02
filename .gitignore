@@ -11,3 +11,7 @@ __pycache__
 ## databases
 /db.sqlite3
 /uploads
+
+## generate by JetBrains IDE
+/.idea
+
