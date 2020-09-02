@@ -1,63 +1,17 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
-from django.template import loader
-from django.urls import reverse
-from django.utils import timezone
-from django.utils.datetime_safe import datetime
 from django.views import View
+from rest_framework import viewsets, permissions
 
 from .forms import DocumentForm, ImageForm
 from .models import Document, Image
 
 
 # Create your views here.
-
-class IndexView(View):
-
-    def get(self, request):
-        latest_documents = Document.objects.order_by('-last_modified')[:20]
-        template = loader.get_template('page/index.html')
-        form = DocumentForm()
-        context = {
-            'latest_documents': latest_documents,
-            'form': form,
-        }
-        output = template.render(context, request)
-        # or shortcut reader(request, 'xxx.html', {context ...} )
-        return HttpResponse(output)
-
-    def post(self, request):
-        form = DocumentForm(request.POST)
-        if not form.is_valid():
-            return HttpResponseBadRequest("invalid data")
-        form.save()
-        return HttpResponseRedirect(reverse("index"))
-
-
-class EditView(View):
-    def get(self, request, document_id):
-        document = get_object_or_404(Document, pk=document_id)
-        return render(request, "page/edit.html", {
-            'document': document
-        })
-
-    # @login_required
-    def post(self, request, document_id):
-        # TODO: login
-        #  https://docs.djangoproject.com/en/3.1/topics/auth/default/#how-to-log-a-user-in
-        if not request.user.is_authenticated:
-            return HttpResponse("Denied!")
-
-        document = get_object_or_404(Document, pk=document_id)
-        form = DocumentForm(request.POST)
-        if form.is_valid():
-            document.body = form.cleaned_data['body']
-            document.last_modified = timezone.now()
-            document.save()
-            return HttpResponseRedirect(reverse("index"))
-        else:
-            return HttpResponseBadRequest("invalid data")
+from .permissions import IsOwnerOrReadOnly
+from .serializers import UserSerializer, DocumentSerializer
 
 
 class ImageUploadView(View):
@@ -79,3 +33,21 @@ class ImageUploadView(View):
             return HttpResponse(image.image.url)
         else:
             return HttpResponseBadRequest("invalid data")
+
+
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly,
+    ]
+
+    # overrides method of class CreateModelMixin.
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

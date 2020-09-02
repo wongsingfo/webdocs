@@ -1,9 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-from . import views
+from page import views
+
+router = DefaultRouter()
+router.register(r'documents', views.DocumentViewSet)
+router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('<int:document_id>/', views.EditView.as_view(), name="page"),
-    path('<int:document_id>/image', views.ImageUploadView.as_view(), name="upload_image")
+    path('', include(router.urls))
 ]
