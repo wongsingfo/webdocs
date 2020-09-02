@@ -11,7 +11,7 @@ from .models import Document, Image
 
 # Create your views here.
 from .permissions import IsOwnerOrReadOnly
-from .serializers import UserSerializer, DocumentSerializer
+from .serializers import UserSerializer, DocumentSerializer, ImageSerializer
 
 
 class ImageUploadView(View):
@@ -33,6 +33,11 @@ class ImageUploadView(View):
             return HttpResponse(image.image.url)
         else:
             return HttpResponseBadRequest("invalid data")
+
+
+class ImageViewSet(viewsets.ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
 
 
 class DocumentViewSet(viewsets.ModelViewSet):

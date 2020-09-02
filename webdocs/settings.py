@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_cleanup',  # auto remove the image when it is deleted from the database
 ]
 
 MIDDLEWARE = [
@@ -114,6 +115,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # REST framework permission management
 
 REST_FRAMEWORK = {
+    # use JSON as the main media type and also include the self describing API.
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
