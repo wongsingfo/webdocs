@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from django.views import View
@@ -31,7 +32,7 @@ class IndexView(View):
         if not form.is_valid():
             return HttpResponseBadRequest("invalid data")
         form.save()
-        return HttpResponseRedirect("/page")
+        return HttpResponseRedirect(reverse("index"))
 
 
 class EditView(View):
@@ -54,7 +55,7 @@ class EditView(View):
             document.body = form.cleaned_data['body']
             document.last_modified = timezone.now()
             document.save()
-            return HttpResponseRedirect('/page')
+            return HttpResponseRedirect(reverse("index"))
         else:
             return HttpResponseBadRequest("invalid data")
 

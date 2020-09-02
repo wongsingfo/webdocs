@@ -35,7 +35,7 @@ ALLOWED_HOSTS = ["192.168.1.150", "*"]
 # To do that, run the following command: 
 #    python manage.py migrate
 INSTALLED_APPS = [
-    'page.apps.EditConfig',
+    'page.apps.PageConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
