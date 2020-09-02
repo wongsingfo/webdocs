@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify, get_valid_filename
 
 
@@ -13,12 +14,23 @@ from django.utils.text import slugify, get_valid_filename
 #   python manage.py migrate
 
 class Document(models.Model):
+    owner = models.ForeignKey('auth.User', related_name="documents", on_delete=models.CASCADE)
     title = models.CharField(max_length=30)
     body = models.TextField(blank=True)
-    last_modified = models.DateTimeField(auto_now_add=True)
+    # Automatically set the field to now when the object is first created.
+    created = models.DateTimeField(auto_now_add=True)
+    # Automatically set the field to now every time the object is saved.
+    last_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # The default ordering for the object, for use when obtaining lists of objects
+        ordering = ('last_modified',)
 
     def __str__(self) -> str:
         return self.title
+
+    def save(self, *args, **kwargs):
+        super(Document, self).save(*args, **kwargs)
 
 
 def get_file_name(image, filename) -> str:
