@@ -6,7 +6,7 @@ from page import views
 router = DefaultRouter()
 router.register('documents', views.DocumentViewSet)
 router.register('users', views.UserViewSet)
-router.register('image', views.ImageViewSet)
+router.register('images', views.ImageViewSet)
 
 urlpatterns = [
     path('', include(router.urls))
