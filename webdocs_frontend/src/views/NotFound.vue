@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="notfound">
     <h3 class="align-center pb-3 display-4">
       404 NOT FOUND
     </h3>
@@ -24,3 +24,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.notfound {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+</style>

@@ -6,6 +6,9 @@ module.exports = {
         '^/api/': {
           target: 'http://localhost:8000'
         },
+        '^/api-auth/': {
+          target: 'http://localhost:8000'
+        },
         '^/admin/': {
           target: 'http://localhost:8000'
         },

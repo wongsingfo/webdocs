@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from page.models import Document, Image
 
-
+# TODO: 分两种序列化，列表中不需要包含body等字段
 class DocumentSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
 

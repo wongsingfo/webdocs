@@ -51,11 +51,11 @@
             <b-nav-item-dropdown right>
               <template slot="button-content">
                 {{ user }}
-                <b-badge variant="light">
+                <!-- <b-badge variant="light">
                   1
-                </b-badge>
+                </b-badge> -->
               </template>
-              <b-dropdown-item
+              <!-- <b-dropdown-item
                 href="#"
                 exact-active-class=""
               >
@@ -64,8 +64,8 @@
                   1
                 </b-badge>
               </b-dropdown-item>
-              <b-dropdown-divider />
-              <b-dropdown-item
+              <b-dropdown-divider /> -->
+              <!-- <b-dropdown-item
                 to="/user-profile"
                 exact-active-class=""
               >
@@ -83,14 +83,14 @@
               >
                 {{ $t('Admin events') }}
               </b-dropdown-item>
-              <b-dropdown-divider />
+              <b-dropdown-divider /> -->
               <b-dropdown-item @click="logout">
                 {{ $t('Logout') }}
               </b-dropdown-item>
             </b-nav-item-dropdown>
           </div>
           <div v-else>
-            <b-nav-item to="/login">
+            <b-nav-item @click="needLogin()">
               {{ $t('Login') }}
             </b-nav-item>
           </div>
@@ -104,6 +104,7 @@ import {
   BNavbar, BNavbarNav, BNavbarBrand, BNavbarToggle, BCollapse, BNavItem,
   BNavItemDropdown, BDropdownItem, BDropdownDivider, BBadge
 } from 'bootstrap-vue'
+import { mapState } from 'vuex'
 import SearchBoxLoading from './SearchBoxLoading.vue'
 // import { loadLanguageAsync } from '@/plugins/i18n'
 
@@ -122,21 +123,14 @@ export default {
     BNavItem,
     BNavItemDropdown,
     BDropdownItem,
-    BDropdownDivider,
-    BBadge
-  },
-  data () {
-    return {
-      user: 'Foo'
-    }
+    // BDropdownDivider,
+    // BBadge
   },
   methods: {
-    logout () {
-      this.axios.post('/api/auth/logout/')
-        .then(res => {
-          this.$store.commit('setUserState', null)
-          this.$router.push('/')
-        })
+    async logout () {
+      const res = await this.axios.post('/api/auth/logout/')
+      this.$store.commit('setUserState', null)
+      this.$router.push('/')
     },
     $t(a) {
       return a

@@ -31,8 +31,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 # Some of these applications make use of at least one database table, though,
-# so we need to create the tables in the database before we can use them. 
-# To do that, run the following command: 
+# so we need to create the tables in the database before we can use them.
+# To do that, run the following command:
 #    python manage.py migrate
 INSTALLED_APPS = [
     'page.apps.PageConfig',
@@ -44,7 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_cleanup',  # auto remove the image when it is deleted from the database
+    'rest_framework.authtoken',
+    'rest_auth',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'rest_auth.registration',
 ]
+
+SITE_ID = 1  # django-rest-auth
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,6 +84,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'webdocs.wsgi.application'
 
+# Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -154,4 +168,3 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = "uploads/"
-
