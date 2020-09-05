@@ -38,6 +38,10 @@ class ImageUploadView(View):
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly,
+    ]
 
 
 class DocumentViewSet(viewsets.ModelViewSet):

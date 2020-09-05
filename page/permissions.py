@@ -13,4 +13,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
 
         # Write permissions are only allowed to the owner of the snippet.
-        return obj.owner == request.user
+        if hasattr(obj, "owner"):
+            return obj.owner == request.user
+        elif hasattr(obj, "document") and hasattr(obj.document, "owner"):
+            return obj.document.owner == request.user
