@@ -15,7 +15,7 @@ from django.utils.text import slugify, get_valid_filename
 
 class Document(models.Model):
     owner = models.ForeignKey('auth.User', related_name="documents", on_delete=models.CASCADE)
-    title = models.CharField(max_length=30)
+    title = models.CharField(max_length=100)
     body = models.TextField(blank=True)
     # Automatically set the field to now when the object is first created.
     created = models.DateTimeField(auto_now_add=True)
@@ -24,7 +24,7 @@ class Document(models.Model):
 
     class Meta:
         # The default ordering for the object, for use when obtaining lists of objects
-        ordering = ('last_modified',)
+        ordering = ('-last_modified',)
 
     def __str__(self) -> str:
         return self.title
