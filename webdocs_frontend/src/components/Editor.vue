@@ -194,10 +194,18 @@ export default {
       // console.log(this.$refs['file-input'].files)
     },
     keydownHandler (event) {
-      if (event.key == 's' && event.ctrlKey) {
+      if ((event.ctrlKey || event.metaKey) && event.keyCode == 83 && !event.altKey && !event.shiftKey) {
+        // ctrl-s or command-s
         event.preventDefault()
-        // console.log(JSON.stringify(this.editor.getMarkdown()))
         this.save()
+      } else if ((event.ctrlKey || event.metaKey) && event.keyCode == 90 && !event.altKey && !event.shiftKey) {
+        // ctrl-z or command-z
+        event.preventDefault()
+        this.editor.undo()
+      } else if ((event.ctrlKey || event.metaKey) && event.keyCode == 89 && !event.altKey && !event.shiftKey) {
+        // ctrl-y or command-y
+        event.preventDefault()
+        this.editor.redo()
       }
     },
   }
