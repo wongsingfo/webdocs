@@ -4,7 +4,7 @@
       <b-button id="return-button" pill variant="outline-dark" to="/" style="z-index: 20">
         <b-icon icon="arrow-left"></b-icon>
       </b-button>
-      <b-button id="status-button" pill :variant="statusStyle[status].variant" style="z-index: 20">
+      <b-button id="status-button" pill :variant="statusStyle[status].variant" style="z-index: 20" @click="save">
         <b-icon :icon="statusStyle[status].icon"></b-icon>
         {{ status }}
       </b-button>
@@ -99,12 +99,11 @@ export default {
         }
       })
 
-      let saveHandler = null
       const delaySave = () => {
-        if (saveHandler != null) {
-          clearTimeout(saveHandler)
+        if (this.saveHandler != null) {
+          clearTimeout(this.saveHandler)
         }
-        saveHandler = setTimeout(this.save, 10000)
+        this.saveHandler = setTimeout(this.save, 10000)
       }
       this.editor.on('change', changes => {
         // console.log(changes, this.document)
@@ -123,6 +122,7 @@ export default {
     return {
       fileInputCallback: () => {},
       status: 'Saved',
+      saveHandler: null,
       document: {
         id: null,
         body: ''
@@ -136,14 +136,43 @@ export default {
       }
     }
   },
-  watch: {
-    '$route'() {
-      if (this.$route.name == 'NoteEdit' && Number(this.$route.params.id) !== this.document.id) {
-        this.fetchData()
-      }
-    }
-  },
+  // watch: {
+  //   '$route'() {
+  //     if (this.$route.name == 'NoteEdit' && Number(this.$route.params.id) !== this.document.id) {
+  //       this.fetchData()
+  //     }
+  //   }
+  // },
   methods: {
+    beforeRouteUpdate(to, from, next) {
+      this.fetchData()
+    },
+    beforeRouteLeave(to, from, next) {
+      if (this.status == 'Saved') {
+        next()
+      } else {
+        clearTimeout(this.saveHandler)
+        this.$bvModal.msgBoxConfirm(this.$t('Save this note?'), {
+          title: this.$t('Not saved yet'),
+          centered: true,
+          okTitle: this.$t('Yes'),
+          cancelTitle: this.$t('No')
+        })
+          .then(ans => {
+            // 'ans' can be undefined
+            if (ans === true) {
+              this.save().then(() => {
+                if (this.status == 'Saved') {
+                  next()
+                }
+              })
+            } else if (ans === false) {
+              next()
+            }
+          })
+      }
+    },
+    $t(a) {return a},
     async fetchData() {
       this.status = 'Initializing'
       // this.editor.setMarkdown('')

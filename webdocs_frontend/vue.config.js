@@ -23,13 +23,13 @@ module.exports = {
     //     rules: [
     //       {
     //         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-    //         use: {
+    //         use: [{
     //           loader: 'url-loader',
     //           query: {
     //             limit: 10000,
     //             name: 'imgs/[name]--[folder].[ext]'
     //           }
-    //         }
+    //         }]
     //       },
     //       {
     //         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
@@ -62,6 +62,24 @@ module.exports = {
           }
           return options
         })
+
+      config.module
+        .rule('images')
+        .test(/\.(png|jpe?g|gif|webp|svg)(\?.*)?$/)
+        .use('url-loader')
+        .tap(options => {
+          options.limit = 10000
+          return options
+        })
+
+      const svgRule = config.module.rule('svg')
+      svgRule.uses.clear()
+      // svgRule.
+      //   use('url-loader')
+      // config.module
+      //   .rule('svg')
+      //   .use('url-loader')
+      //   .loader('url-loader')
 
       // config.module
       //   .rule('gzip')
