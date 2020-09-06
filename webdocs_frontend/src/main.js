@@ -17,7 +17,7 @@ Vue.use(UserStatus)
 
 Vue.config.productionTip = false
 
-new Vue({
+window.appRoot = new Vue({
   router,
   store,
   render: h => h(App)

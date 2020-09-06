@@ -57,6 +57,22 @@
         </template>
       </b-form-group>
     </b-modal>
+
+    <b-toast
+      id="update-toast"
+      title="Webdocs更新"
+      auto-hide-delay="5000"
+      solid
+      variant="info"
+    >
+      Webdocs有更新！<br>
+      点击
+      <b-link @click="reload()">
+        刷新
+      </b-link>
+      立刻更新， <br>
+      或下次访问时自动更新。
+    </b-toast>
   </div>
 </template>
 
@@ -133,6 +149,18 @@ export default {
         this.resolve = resolve
         this.reject = reject
       })
+    },
+    reload() {
+      if('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations()
+          .then((registrations) => {
+              for(let registration of registrations) {
+                console.log('unregister',registration);
+                registration.unregister();
+              }
+          });
+      }
+      setTimeout(() => window.location.reload(true), 100);
     }
   }
 }
