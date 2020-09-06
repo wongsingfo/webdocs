@@ -152,7 +152,7 @@ export default {
         const res = await this.axios.get(`/api/documents/${docId}/`)
         this.document = res.data
         this.status = 'Saved'
-        this.editor.setMarkdown(this.document.body, cursor)
+        this.editor.setMarkdown(this.document.body)
       } catch (err) {
         console.log(err)
         alert('Failed to load markdown, please retry...')

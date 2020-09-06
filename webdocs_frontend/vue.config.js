@@ -18,6 +18,41 @@ module.exports = {
       }
     },
 
+    // configureWebpack: {
+    //   module: {
+    //     rules: [
+    //       {
+    //         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+    //         use: {
+    //           loader: 'url-loader',
+    //           query: {
+    //             limit: 10000,
+    //             name: 'imgs/[name]--[folder].[ext]'
+    //           }
+    //         }
+    //       },
+    //       {
+    //         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+    //         loader: 'url-loader',
+    //         options: {
+    //           limit: 10000,
+    //           name: 'media/[name]--[folder].[ext]'
+    //         }
+    //       },
+    //       {
+    //         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+    //         use: {
+    //           loader: 'url-loader',
+    //           query: {
+    //             limit: 10000,
+    //             name: 'fonts/[name]--[folder].[ext]'
+    //           }
+    //         }
+    //       }
+    //     ]
+    //   }
+    // },
+
     chainWebpack: config => {
       config
         .plugin('html')

@@ -16,8 +16,11 @@ class ClickEvent {
       event.preventDefault()
       event.stopPropagation()
 
-      // Hide format box
-      eventCenter.dispatch('muya-format-picker', { reference: null })
+      // Hide all float box and image transformer
+      const { keyboard } = this.muya
+      if (keyboard) {
+        keyboard.hideAllFloatTools()
+      }
 
       const { start, end } = selection.getCursorRange()
 
@@ -25,9 +28,9 @@ class ClickEvent {
       if (!start || !end) {
         return
       }
+
       const startBlock = contentState.getBlock(start.key)
       const nextTextBlock = contentState.findNextBlockInLocation(startBlock)
-
       if (
         nextTextBlock && nextTextBlock.key === end.key &&
         end.offset === 0 &&
@@ -63,6 +66,7 @@ class ClickEvent {
       // handler table click
       const toolItem = getToolItem(target)
       contentState.selectedImage = null
+      contentState.selectedTableCells = null
       if (toolItem) {
         event.preventDefault()
         event.stopPropagation()
@@ -72,12 +76,32 @@ class ClickEvent {
           contentState.tableToolBarClick(type)
         }
       }
-      // handler image and inline math preview click
+      // Handle table drag bar click
+      if (target.classList.contains('ag-drag-handler')) {
+        event.preventDefault()
+        event.stopPropagation()
+        const rect = target.getBoundingClientRect()
+        const reference = {
+          getBoundingClientRect () {
+            return rect
+          },
+          width: rect.offsetWidth,
+          height: rect.offsetHeight
+        }
+        eventCenter.dispatch('muya-table-bar', {
+          reference,
+          tableInfo: {
+            barType: target.classList.contains('left') ? 'left' : 'bottom'
+          }
+        })
+      }
+      // Handle image and inline math preview click
       const markedImageText = target.previousElementSibling
       const mathRender = target.closest(`.${CLASS_OR_ID.AG_MATH_RENDER}`)
       const rubyRender = target.closest(`.${CLASS_OR_ID.AG_RUBY_RENDER}`)
       const imageWrapper = target.closest(`.${CLASS_OR_ID.AG_INLINE_IMAGE}`)
-      const imageTurnInto = target.closest('.ag-image-icon-turninto')
+      const codeCopy = target.closest('.ag-code-copy')
+      const footnoteBackLink = target.closest('.ag-footnote-backlink')
       const imageDelete = target.closest('.ag-image-icon-delete') || target.closest('.ag-image-icon-close')
       const mathText = mathRender && mathRender.previousElementSibling
       const rubyText = rubyRender && rubyRender.previousElementSibling
@@ -93,6 +117,11 @@ class ClickEvent {
       } else if (rubyText) {
         selectionText(rubyText)
       }
+      if (codeCopy) {
+        event.stopPropagation()
+        event.preventDefault()
+        return this.muya.contentState.copyCodeBlock(event)
+      }
       // Handle delete inline iamge by click delete icon.
       if (imageDelete && imageWrapper) {
         const imageInfo = getImageInfo(imageWrapper)
@@ -103,18 +132,56 @@ class ClickEvent {
         return contentState.deleteImage(imageInfo)
       }
 
+      if (footnoteBackLink) {
+        event.preventDefault()
+        event.stopPropagation()
+        const figure = event.target.closest('figure')
+        const identifier = figure.querySelector('span.ag-footnote-input').textContent
+        if (identifier) {
+          const footnoteIdentifier = document.querySelector(`#noteref-${identifier}`)
+          if (footnoteIdentifier) {
+            footnoteIdentifier.scrollIntoView({ behavior: 'smooth' })
+          }
+        }
+        return
+      }
+
       // Handle image click, to select the current image
       if (target.tagName === 'IMG' && imageWrapper) {
         // Handle select image
         const imageInfo = getImageInfo(imageWrapper)
         event.preventDefault()
         eventCenter.dispatch('select-image', imageInfo)
-        return contentState.selectImage(imageInfo)
+        // Handle show image toolbar
+        const rect = imageWrapper.querySelector('.ag-image-container').getBoundingClientRect()
+        const reference = {
+          getBoundingClientRect () {
+            return rect
+          },
+          width: imageWrapper.offsetWidth,
+          height: imageWrapper.offsetHeight
+        }
+        eventCenter.dispatch('muya-image-toolbar', {
+          reference,
+          imageInfo
+        })
+        contentState.selectImage(imageInfo)
+        // Handle show image transformer
+        const imageSelector = imageInfo.imageId.indexOf('_') > -1
+          ? `#${imageInfo.imageId}`
+          : `#${imageInfo.key}_${imageInfo.imageId}_${imageInfo.token.range.start}`
+
+        const imageContainer = document.querySelector(`${imageSelector} .ag-image-container`)
+
+        eventCenter.dispatch('muya-transformer', {
+          reference: imageContainer,
+          imageInfo
+        })
+        return
       }
 
       // Handle click imagewrapper when it's empty or image load failed.
       if (
-        (imageTurnInto && imageWrapper) ||
         (imageWrapper &&
         (
           imageWrapper.classList.contains('ag-empty-image') ||
@@ -124,9 +191,6 @@ class ClickEvent {
         const rect = imageWrapper.getBoundingClientRect()
         const reference = {
           getBoundingClientRect () {
-            if (imageTurnInto) {
-              rect.height = 0
-            }
             return rect
           }
         }
@@ -139,8 +203,15 @@ class ClickEvent {
         event.preventDefault()
         return event.stopPropagation()
       }
+
       if (target.closest('div.ag-container-preview') || target.closest('div.ag-html-preview')) {
-        return event.stopPropagation()
+        event.stopPropagation()
+        if (target.closest('div.ag-container-preview')) {
+          event.preventDefault()
+          const figureEle = target.closest('figure')
+          contentState.handleContainerBlockClick(figureEle)
+        }
+        return
       }
       // handler container preview click
       const editIcon = target.closest('.ag-container-icon')

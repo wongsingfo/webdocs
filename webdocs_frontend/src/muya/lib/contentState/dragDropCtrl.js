@@ -60,7 +60,8 @@ const dragDropCtrl = ContentState => {
   ContentState.prototype.dragoverHandler = function (event) {
     // Cancel to allow tab drag&drop.
     if (!event.dataTransfer.types.length) {
-      return event.dataTransfer.dropEffect = 'none'
+      event.dataTransfer.dropEffect = 'none'
+      return
     }
 
     if (event.dataTransfer.types.includes('text/uri-list')) {
@@ -138,7 +139,6 @@ const dragDropCtrl = ContentState => {
       }
       const image = fileList.find(file => /image/.test(file.type))
       if (image && dropAnchor) {
-        console.log('aaa:', image)
         const { name, path } = image
         const id = `loading-${getUniqueId()}`
         const text = `![${id}](${path})`
@@ -158,7 +158,7 @@ const dragDropCtrl = ContentState => {
         }
         this.render()
 
-        const nSrc = await this.muya.options.imageAction(path)
+        const nSrc = await this.muya.options.imageAction(path, id, name)
         const { src } = getImageSrc(path)
         if (src) {
           this.stateRender.urlMap.set(nSrc, src)

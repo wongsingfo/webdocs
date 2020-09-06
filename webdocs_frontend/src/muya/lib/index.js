@@ -1,8 +1,10 @@
 import ContentState from './contentState'
 import EventCenter from './eventHandler/event'
+import MouseEvent from './eventHandler/mouseEvent'
 import Clipboard from './eventHandler/clipboard'
 import Keyboard from './eventHandler/keyboard'
 import DragDrop from './eventHandler/dragDrop'
+import Resize from './eventHandler/resize'
 import ClickEvent from './eventHandler/clickEvent'
 import { CLASS_OR_ID, MUYA_DEFAULT_OPTION } from './config'
 import { wordCount } from './utils'
@@ -13,8 +15,12 @@ import './assets/styles/index.css'
 
 class Muya {
   static plugins = []
-  static use (plugin) {
-    this.plugins.push(plugin)
+
+  static use (plugin, options = {}) {
+    this.plugins.push({
+      plugin,
+      options
+    })
   }
 
   constructor (container, options) {
@@ -26,8 +32,8 @@ class Muya {
     this.tooltip = new ToolTip(this)
     // UI plugins
     if (Muya.plugins.length) {
-      for (const Plugin of Muya.plugins) {
-        this[Plugin.pluginName] = new Plugin(this)
+      for (const { plugin: Plugin, options: opts } of Muya.plugins) {
+        this[Plugin.pluginName] = new Plugin(this, opts)
       }
     }
 
@@ -36,6 +42,8 @@ class Muya {
     this.clickEvent = new ClickEvent(this)
     this.keyboard = new Keyboard(this)
     this.dragdrop = new DragDrop(this)
+    this.resize = new Resize(this)
+    this.mouseEvent = new MouseEvent(this)
     this.init()
   }
 
@@ -58,7 +66,7 @@ class Muya {
 
   mutationObserver () {
     // Select the node that will be observed for mutations
-    const { container } = this
+    const { container, eventCenter } = this
 
     // Options for the observer (which mutations to observe)
     const config = { childList: true, subtree: true }
@@ -73,17 +81,14 @@ class Muya {
           if (removedNodes && removedNodes.length) {
             const hasTable = Array.from(removedNodes).some(node => node.nodeType === 1 && node.closest('table.ag-paragraph'))
             if (hasTable) {
+              eventCenter.dispatch('crashed')
               console.warn('There was a problem with the table deletion.')
-            }
-            const lineRemovedUnExpected = Array.from(removedNodes).some(node => node.nodeType === 1 && node.classList.contains('ag-paragraph-content')) &&
-              this.keyboard.isComposed
-            if (lineRemovedUnExpected) {
-              this.contentState.partialRender()
             }
           }
 
           if (target.getAttribute('id') === 'ag-editor-id' && target.childElementCount === 0) {
-            // TODO: the editor can not be input any more. report bugs and recoveryr...
+            // TODO: the editor can not be input any more. report bugs and recovery...
+            eventCenter.dispatch('crashed')
             console.warn('editor crashed, and can not be input any more.')
           }
         }
@@ -104,13 +109,26 @@ class Muya {
     const cursor = this.getCursor()
     const history = this.getHistory()
     const toc = this.getTOC()
+
     eventCenter.dispatch('change', { markdown, wordCount, cursor, history, toc })
+  }
+
+  dispatchSelectionChange = () => {
+    const selectionChanges = this.contentState.selectionChange()
+
+    this.eventCenter.dispatch('selectionChange', selectionChanges)
+  }
+
+  dispatchSelectionFormats = () => {
+    const { formats } = this.contentState.selectionFormats()
+
+    this.eventCenter.dispatch('selectionFormats', formats)
   }
 
   getMarkdown () {
     const blocks = this.contentState.getBlocks()
-    const listIndentation = this.contentState.listIndentation
-    return new ExportMarkdown(blocks, listIndentation).generate()
+    const { isGitlabCompatibilityEnabled, listIndentation } = this.contentState
+    return new ExportMarkdown(blocks, listIndentation, isGitlabCompatibilityEnabled).generate()
   }
 
   getHistory () {
@@ -129,9 +147,9 @@ class Muya {
     return this.contentState.history.clearHistory()
   }
 
-  exportStyledHTML (title = '', printOptimization = false) {
+  exportStyledHTML (options) {
     const { markdown } = this
-    return new ExportHtml(markdown, this).generate(title, printOptimization)
+    return new ExportHtml(markdown, this).generate(options)
   }
 
   exportHtml () {
@@ -149,11 +167,14 @@ class Muya {
 
   setMarkdown (markdown, cursor, isRenderCursor = true) {
     let newMarkdown = markdown
-    if (cursor) {
-      newMarkdown = this.contentState.addCursorToMarkdown(markdown, cursor)
+    let isValid = false
+    if (cursor && cursor.anchor && cursor.focus) {
+      const cursorInfo = this.contentState.addCursorToMarkdown(markdown, cursor)
+      newMarkdown = cursorInfo.markdown
+      isValid = cursorInfo.isValid
     }
     this.contentState.importMarkdown(newMarkdown)
-    this.contentState.importCursor(cursor)
+    this.contentState.importCursor(cursor && isValid)
     this.contentState.render(isRenderCursor)
     setTimeout(() => {
       this.dispatchChange()
@@ -187,8 +208,13 @@ class Muya {
   }
 
   setFont ({ fontSize, lineHeight }) {
-    if (fontSize) this.contentState.fontSize = parseInt(fontSize, 10)
-    if (lineHeight) this.contentState.lineHeight = lineHeight
+    if (fontSize) {
+      this.options.fontSize = parseInt(fontSize, 10)
+    }
+    if (lineHeight) {
+      this.options.lineHeight = lineHeight
+    }
+    this.contentState.render(false)
   }
 
   setTabSize (tabSize) {
@@ -242,7 +268,18 @@ class Muya {
     this.container.focus()
   }
 
-  blur () {
+  blur (isRemoveAllRange = false, unSelect = false) {
+    if (isRemoveAllRange) {
+      const selection = document.getSelection()
+      selection.removeAllRanges()
+    }
+
+    if (unSelect) {
+      this.contentState.selectedImage = null
+      this.contentState.selectedTableCells = null
+    }
+
+    this.hideAllFloatTools()
     this.container.blur()
   }
 
@@ -287,20 +324,33 @@ class Muya {
 
   undo () {
     this.contentState.history.undo()
+
+    this.dispatchSelectionChange()
+    this.dispatchSelectionFormats()
+    this.dispatchChange()
   }
 
   redo () {
     this.contentState.history.redo()
+
+    this.dispatchSelectionChange()
+    this.dispatchSelectionFormats()
+    this.dispatchChange()
   }
 
   selectAll () {
-    if (this.hasFocus()) {
-      this.contentState.selectAll()
+    if (!this.hasFocus() && !this.contentState.selectedTableCells) {
+      return
     }
-    const activeElement = document.activeElement
-    if (activeElement.nodeName === 'INPUT') {
-      activeElement.select()
-    }
+    this.contentState.selectAll()
+  }
+
+  /**
+   * Get all images' src from the given markdown.
+   * @param {string} markdown you want to extract images from this markdown.
+   */
+  extractImages (markdown = this.markdown) {
+    return this.contentState.extractImages(markdown)
   }
 
   copyAsMarkdown () {
@@ -315,14 +365,23 @@ class Muya {
     this.clipboard.pasteAsPlainText()
   }
 
-  copy (name) {
-    this.clipboard.copy(name)
+  /**
+   * Copy the anchor block contains the block with `info`. like copy as markdown.
+   * @param {string|object} key the block key or block
+   */
+  copy (info) {
+    return this.clipboard.copy('copyBlock', info)
   }
 
   setOptions (options, needRender = false) {
+    // FIXME: Just to be sure, disabled due to #1648.
+    if (options.codeBlockLineNumbers) {
+      options.codeBlockLineNumbers = false
+    }
+
     Object.assign(this.options, options)
     if (needRender) {
-      this.contentState.render()
+      this.contentState.render(false, true)
     }
 
     // Set quick insert hint visibility
@@ -336,6 +395,12 @@ class Muya {
       }
     }
 
+    // Set spellcheck container attribute
+    const spellcheckEnabled = options.spellcheckEnabled
+    if (typeof spellcheckEnabled !== 'undefined') {
+      this.container.setAttribute('spellcheck', !!spellcheckEnabled)
+    }
+
     if (options.bulletListMarker) {
       this.contentState.turndownConfig.bulletListMarker = options.bulletListMarker
     }
@@ -343,6 +408,21 @@ class Muya {
 
   hideAllFloatTools () {
     return this.keyboard.hideAllFloatTools()
+  }
+
+  /**
+   * Replace the word range with the given replacement.
+   *
+   * @param {*} line A line block reference of the line that contains the word to
+   *                 replace - must be a valid reference!
+   * @param {*} wordCursor The range of the word to replace (line: "abc >foo< abc"
+   *                       whereas `>`/`<` is start and end of `wordCursor`). This
+   *                       range is replaced by `replacement`.
+   * @param {string} replacement The replacement.
+   * @param {boolean} setCursor Shoud we update the editor cursor?
+   */
+  replaceWordInline (line, wordCursor, replacement, setCursor = false) {
+    this.contentState.replaceWordInline(line, wordCursor, replacement, setCursor)
   }
 
   destroy () {
@@ -360,7 +440,7 @@ class Muya {
   * [ensureContainerDiv ensure container element is div]
   */
 function getContainer (originContainer, options) {
-  const { hideQuickInsertHint } = options
+  const { hideQuickInsertHint, spellcheckEnabled } = options
   const container = document.createElement('div')
   const rootDom = document.createElement('div')
   const attrs = originContainer.attributes
@@ -376,7 +456,9 @@ function getContainer (originContainer, options) {
   container.setAttribute('contenteditable', true)
   container.setAttribute('autocorrect', false)
   container.setAttribute('autocomplete', 'off')
-  container.setAttribute('spellcheck', false)
+  // NOTE: The browser is not able to correct misspelled words words without
+  // a custom implementation like in Mark Text.
+  container.setAttribute('spellcheck', !!spellcheckEnabled)
   container.appendChild(rootDom)
   originContainer.replaceWith(container)
   return container

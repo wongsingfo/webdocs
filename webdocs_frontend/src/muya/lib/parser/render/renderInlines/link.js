@@ -56,6 +56,11 @@ export default function link (h, cursor, block, token, outerClass) {
             href: token.href + encodeURI(token.backlash.second),
             target: '_blank',
             title: token.title
+          },
+          dataset: {
+            start,
+            end,
+            raw: token.raw
           }
         }, [
           ...token.children.reduce((acc, to) => {
@@ -65,7 +70,9 @@ export default function link (h, cursor, block, token, outerClass) {
           ...this.backlashInToken(h, token.backlash.first, className, firstBacklashStart, token)
         ]),
         h(`span.${className}.${CLASS_OR_ID.AG_REMOVE}`, middleBracket),
-        h(`span.${linkClassName}.${CLASS_OR_ID.AG_REMOVE}`, [
+        h(`span.${linkClassName}.${CLASS_OR_ID.AG_REMOVE}`, {
+          attrs: { spellcheck: 'false' }
+        }, [
           ...hrefContent,
           ...this.backlashInToken(h, token.backlash.second, className, secondBacklashStart, token)
         ]),

@@ -1,5 +1,6 @@
 import { CLASS_OR_ID, BLOCK_TYPE6 } from '../../../config'
 import { snakeToCamel } from '../../../utils'
+import sanitize from '../../../utils/dompurify'
 
 export default function htmlTag (h, cursor, block, token, outerClass) {
   const { tag, openTag, closeTag, children, attrs } = token
@@ -17,9 +18,11 @@ export default function htmlTag (h, cursor, block, token, outerClass) {
       return Array.isArray(chunk) ? [...acc, ...chunk] : [...acc, chunk]
     }, [])
     : ''
+
   switch (tag) {
+    // Handle html img.
     case 'img': {
-      return this.htmlImage(h, cursor, block, token, outerClass)
+      return this.image(h, cursor, block, token, outerClass)
     }
     case 'br': {
       return [h(`span.${CLASS_OR_ID.AG_HTML_TAG}`, [...openContent, h(tag)])]
@@ -34,12 +37,23 @@ export default function htmlTag (h, cursor, block, token, outerClass) {
         // if  tag is a block level element, use a inline element `span` to instead.
         // Because we can not nest a block level element in span element(line is span element)
         // we also recommand user not use block level element in paragraph. use block element in html block.
-        let selector = BLOCK_TYPE6.includes(tag) ? 'span' : tag
-        selector += `.${CLASS_OR_ID.AG_INLINE_RULE}`
+        // Use code !sanitize(`<${tag}>`) to filter some malicious tags. for example: <embed>.
+        let selector = BLOCK_TYPE6.includes(tag) || !sanitize(`<${tag}>`) ? 'span' : tag
+        selector += `.${CLASS_OR_ID.AG_INLINE_RULE}.${CLASS_OR_ID.AG_RAW_HTML}`
         const data = {
           attrs: {},
-          dataset: {}
+          dataset: {
+            start,
+            end,
+            raw: token.raw
+          }
         }
+
+        // Disable spell checking for these tags
+        if (tag === 'code' || tag === 'kbd') {
+          Object.assign(data.attrs, { spellcheck: 'false' })
+        }
+
         if (attrs.id) {
           selector += `#${attrs.id}`
         }
@@ -57,9 +71,17 @@ export default function htmlTag (h, cursor, block, token, outerClass) {
         }
 
         return [
-          h(`span.${tagClassName}.${CLASS_OR_ID.AG_OUTPUT_REMOVE}`, openContent),
+          h(`span.${tagClassName}.${CLASS_OR_ID.AG_OUTPUT_REMOVE}`, {
+            attrs: {
+              spellcheck: 'false'
+            }
+          }, openContent),
           h(`${selector}`, data, anchor),
-          h(`span.${tagClassName}.${CLASS_OR_ID.AG_OUTPUT_REMOVE}`, closeContent)
+          h(`span.${tagClassName}.${CLASS_OR_ID.AG_OUTPUT_REMOVE}`, {
+            attrs: {
+              spellcheck: 'false'
+            }
+          }, closeContent)
         ]
       }
   }
