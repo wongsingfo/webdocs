@@ -2,6 +2,8 @@ import Vue from 'vue'
 import _axios from 'axios'
 import store from '@/store'
 
+const TIME_FIELD = /created|last_modified/
+
 function camelCase (str) {
   return str.replace(/_([a-z])/g, match => match[1].toUpperCase())
 }
@@ -43,7 +45,7 @@ export function transformJSON2Object (obj) {
   for (let key in obj) {
     const field = obj[key]
     const objKey = camelCase(key)
-    if (key.endsWith('time') && typeof field === 'string') {
+    if (TIME_FIELD.test(key) && typeof field === 'string') {
       result[objKey] = new Date(field)
     } else if (typeof field === 'object') {
       result[objKey] = transformJSON2Object(field)

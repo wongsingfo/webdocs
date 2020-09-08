@@ -85,10 +85,7 @@ export default {
   },
   async created () {
     const res = await this.axios.get(`/api/documents/`)
-    this.recentNotes = res.data.results.map(note => {
-      note.lastModified = new Date(note.lastModified)
-      return note
-    })
+    this.recentNotes = res.data.results
   },
   methods: {
     async newNote() {
