@@ -28,7 +28,7 @@
       <div id="editor-wrapper" class="editor" @keydown="keydownHandler">
         <div ref="editor"></div>
       </div>
-      <NoteDetailSidebar id="editor-note-detail" :document="document" />
+      <NoteDetailSidebar id="editor-note-detail" :document="document" @doc-change="docChangeHandler"/>
       <TOCSidebar id="toc-sidebar" :toc="toc" />
     </b-overlay>
     <input type="file" ref="file-input" @change="fileInputCallback" v-show="false"/>
@@ -204,6 +204,9 @@ export default {
       }
     },
     $t(a) {return a},
+    docChangeHandler(newDoc) {
+      this.document = newDoc
+    },
     async fetchData() {
       this.status = 'Initializing'
       // this.editor.setMarkdown('')
