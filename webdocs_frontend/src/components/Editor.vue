@@ -264,7 +264,11 @@ export default {
           'Content-Type': 'multipart/form-data'
         }
       })
-      return res.data.image
+      let imageUrl = res.data.image
+      if (window.location.hostname !== 'localhost' && imageUrl.startsWith('http://')) {
+        imageUrl = 'https' + imageUrl.substring(4)
+      }
+      return imageUrl
       // read as base64 encoding
       // return await new Promise(resolve => {
       //   const reader = new FileReader()
