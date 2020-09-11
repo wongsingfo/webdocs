@@ -27,7 +27,7 @@ export function transformObject2JSON (obj) {
       result[key] = field.toISOString()
     } else if (typeof field === 'object') {
       result[key] = transformObject2JSON(field)
-    } else {
+    } else if (field !== undefined) {
       result[key] = field
     }
   }

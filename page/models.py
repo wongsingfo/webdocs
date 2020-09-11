@@ -16,6 +16,7 @@ from django.utils.text import slugify, get_valid_filename
 class Document(models.Model):
     owner = models.ForeignKey('auth.User', related_name="documents", on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
+    abstract = models.TextField(max_length=300, blank=True)
     body = models.TextField(blank=True)
     # Automatically set the field to now when the object is first created.
     created = models.DateTimeField(auto_now_add=True)

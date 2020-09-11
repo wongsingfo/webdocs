@@ -57,6 +57,7 @@
         :items="provider"
         :fields="fields"
         primary-key="id"
+        @row-clicked="toggleItemDetails"
       >
         <template #table-busy>
           <div class="text-center text-primary my-2">
@@ -69,6 +70,10 @@
           <b-link :to="`/note/${row.item.id}`">
             {{ row.value }}
           </b-link>
+        </template>
+
+        <template #row-details="row">
+          {{ row.item.abstract }}
         </template>
       </b-table>
 
@@ -120,11 +125,19 @@ export default {
           }
         })
         this.totalRows = res.data.count
-        return res.data.results
+        const notes = res.data.results.map(note => {
+          note._showDetails = false
+          return note
+        })
+        return notes
       } catch (err) {
         console.log(err)
         return []
       }
+    },
+    toggleItemDetails(item, index, event) {
+      item._showDetails = !item._showDetails
+      console.log(item, index, event)
     }
   }
 }

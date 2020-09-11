@@ -9,13 +9,13 @@ class UserConciseSerializer(serializers.ModelSerializer):
         fields = ['id', 'username']
 
 class DocumentSerializer(serializers.HyperlinkedModelSerializer):
-    owner = UserConciseSerializer()
+    owner = UserConciseSerializer(read_only=True)
     created = serializers.ReadOnlyField()
     last_modified = serializers.ReadOnlyField()
 
     class Meta:
         model = Document
-        fields = ['url', 'id', 'title', 'owner', 'body', 'created', 'last_modified']
+        fields = ['url', 'id', 'title', 'owner', 'abstract', 'body', 'created', 'last_modified']
 
     @classmethod
     def many_init(cls, *args, **kwargs):

@@ -61,24 +61,24 @@
             no-body
             class="my-4"
           >
+            <h4 class="mb-2">
+              <b-link
+                :to="`/note/${note.id}`"
+                active-class=""
+                exact-active-class=""
+              >
+                {{ note.title }}
+              </b-link>
+            </h4>
             <div class="d-flex w-100 justify-content-between">
-              <h4 class="mb-2">
-                <b-link
-                  :to="`/note/${note.id}`"
-                  active-class=""
-                  exact-active-class=""
-                >
-                  {{ note.title }}
-                </b-link>
-              </h4>
+              <p> by {{ note.owner.username }} </p>
               <em>last modified at {{ note.lastModified.toLocaleString() }}</em>
             </div>
             <p
               class="mb-2"
               style="text-align: left"
             >
-              <!-- {{ 'Here is abstract.' }} -->
-              by {{ note.owner.username }}
+              {{ note.abstract }}
             </p>
             <hr>
           </div>
