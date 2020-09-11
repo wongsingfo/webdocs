@@ -1,18 +1,40 @@
 <template>
-  <div>
+  <div @mousemove="mousemoveHandler">
     <b-overlay :show="status === 'Initializing'">
-      <b-button id="return-button" pill variant="outline-dark" to="/" style="z-index: 20">
-        <b-icon icon="arrow-left"></b-icon>
-        Home
-      </b-button>
-      <b-button id="sidebar-button" pill variant="outline-dark" v-b-toggle.editor-note-detail style="z-index: 20">
-        <b-icon icon="card-list"></b-icon>
-        Note Details
-      </b-button>
-      <b-button id="toc-button" pill variant="outline-dark" v-b-toggle.toc-sidebar style="z-index: 20">
-        <b-icon icon="bar-chart-steps"></b-icon>
-        Table of Contents
-      </b-button>
+      <transition name="fade">
+        <div v-show="showButtons">
+          <b-button
+            id="return-button"
+            pill
+            variant="outline-dark"
+            style="z-index: 20"
+            @click="$router.go(-1)"
+          >
+            <b-icon icon="arrow-left"></b-icon>
+            Back
+          </b-button>
+          <b-button
+            id="sidebar-button"
+            v-b-toggle.editor-note-detail
+            pill
+            variant="outline-dark"
+            style="z-index: 20"
+          >
+            <b-icon icon="card-list"></b-icon>
+            Note Details
+          </b-button>
+          <b-button
+            id="toc-button"
+            v-b-toggle.toc-sidebar
+            pill
+            variant="outline-dark"
+            style="z-index: 20"
+          >
+            <b-icon icon="bar-chart-steps"></b-icon>
+            Table of Contents
+          </b-button>
+        </div>
+      </transition>
       <b-button
         id="status-button"
         pill
@@ -51,11 +73,7 @@ import '@/muya/themes/editor.scss'
 import NoteDetailSidebar from '@/components/NoteDetailSidebar.vue'
 import TOCSidebar from '@/components/TOCSidebar.vue'
 
-const example = "# Muya Example\n\n## English Text\n\n#### Sponsor Mark Text Development\n\nMark Text is an MIT licensed open source project, you will always be able to download the latest version from [GitHub release page](https://github.com/marktext/marktext/releases). Mark Text is still in development, and its development is inseparable from all sponsors. I hope you join them:\n\n## Chinese Text\n\n9月1日，外交部发言人华春莹主持例行记者会。有记者就中印边境最新事态提问。\n\n华春莹表示，关于边界等历史遗留的问题，中方历来主张通过和平友好协商，找到公平合理和双方都能接受的解决方案。一段时间以来，双方在各个层级进行了多次接触和会谈，作出积极的努力来寻求和平解决边界的一些分歧或争端，共同维护中印边境地区的和平与稳定。\n\n但是在8月31日，印军破坏了前期双方多层级会谈会晤达成的共识，在中印边界的西段班公湖以南地区以及热钦山口附近再次非法越线，公然挑衅，造成边境局势再度紧张。印方的行径严重侵犯了中方的领土主权，也严重违反了两国相关的协定、协议和重要的共识，破坏了边境地区的和平与安宁。这与双方一段时间以来推动现地局势缓和降温的努力是背道而驰的，中方对此坚决反对并且已经向印方提出了严正交涉，要求印方停止一切挑衅行为，立即撤回非法越线的人员，立即停止任何导致局势紧张、升级和复杂化的举动。\n\n(本文来自澎湃新闻，更多原创资讯请下载“澎湃新闻”APP)\n\n![](https://ss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3604977702,2490965591&fm=173&app=49&f=JPEG?w=312&h=208&s=EF924781C4C074FC9499958A0300E091)\n\n## Code Block\n\n```js\nconst arr1 = [1,2,3,[1,2,3,4, [2,3,4]]]function flatten(input) { // flatten deep using a stack  const stack = [...input]  const res = []  while (stack.length) {    const next = stack.pop()    if (Array.isArray(next)) {      stack.push(...next)    } else {      res.push(next)    }  }  return res.reverse()}flatten(arr1)// [1, 2, 3, 1, 2, 3, 4, 2, 3, 4]\n```\n\n## Table\n\n```\n| 标题1 | 标题2 | 标题3 || :--  | :--: | ----: || 左对齐 | 居中 | 右对齐 || ---------------------- | ------------- | ----------------- |\n```\n\n| 标题1                    | 标题2           | 标题3               |\n| ---------------------- | ------------- | ----------------- |\n| 左对齐                    | 居中            | 右对齐               |\n| ---------------------- | ------------- | ----------------- |\n\n## Flowchart\n\n```flowchart\nstart=>start: start\noperation1=>operation: operation1\nisSuccess=>condition: success?\noperation2=>operation: operation2\noperation3=>operation: operation3\noperation4=>operation: operation4\nend=>end: 结束\nstart->operation1->isSuccess\nisSuccess(yes)->operation2->end\nisSuccess(no)->operation3->operation4(right)->operation1\n```\n\n## Katex Formula\n\n$$\n1 +  \\frac{q^2}{(1-q)}+\\frac{q^6}{(1-q)(1-q^2)}+\\cdots=\\prod_{j=0}^{\\infty}\\frac{1}{(1-q^{5j+2})(1-q^{5j+3})},\\text{ for }\\lvert q\\rvert < 1.\n$$\n"
-const cursor = {
-  anchor: {line: 0, ch: 0},
-  focus: {line: 0, ch: 0}
-}
+// const example = "# Muya Example\n\n## English Text\n\n#### Sponsor Mark Text Development\n\nMark Text is an MIT licensed open source project, you will always be able to download the latest version from [GitHub release page](https://github.com/marktext/marktext/releases). Mark Text is still in development, and its development is inseparable from all sponsors. I hope you join them:\n\n## Chinese Text\n\n9月1日，外交部发言人华春莹主持例行记者会。有记者就中印边境最新事态提问。\n\n华春莹表示，关于边界等历史遗留的问题，中方历来主张通过和平友好协商，找到公平合理和双方都能接受的解决方案。一段时间以来，双方在各个层级进行了多次接触和会谈，作出积极的努力来寻求和平解决边界的一些分歧或争端，共同维护中印边境地区的和平与稳定。\n\n但是在8月31日，印军破坏了前期双方多层级会谈会晤达成的共识，在中印边界的西段班公湖以南地区以及热钦山口附近再次非法越线，公然挑衅，造成边境局势再度紧张。印方的行径严重侵犯了中方的领土主权，也严重违反了两国相关的协定、协议和重要的共识，破坏了边境地区的和平与安宁。这与双方一段时间以来推动现地局势缓和降温的努力是背道而驰的，中方对此坚决反对并且已经向印方提出了严正交涉，要求印方停止一切挑衅行为，立即撤回非法越线的人员，立即停止任何导致局势紧张、升级和复杂化的举动。\n\n(本文来自澎湃新闻，更多原创资讯请下载“澎湃新闻”APP)\n\n![](https://ss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3604977702,2490965591&fm=173&app=49&f=JPEG?w=312&h=208&s=EF924781C4C074FC9499958A0300E091)\n\n## Code Block\n\n```js\nconst arr1 = [1,2,3,[1,2,3,4, [2,3,4]]]function flatten(input) { // flatten deep using a stack  const stack = [...input]  const res = []  while (stack.length) {    const next = stack.pop()    if (Array.isArray(next)) {      stack.push(...next)    } else {      res.push(next)    }  }  return res.reverse()}flatten(arr1)// [1, 2, 3, 1, 2, 3, 4, 2, 3, 4]\n```\n\n## Table\n\n```\n| 标题1 | 标题2 | 标题3 || :--  | :--: | ----: || 左对齐 | 居中 | 右对齐 || ---------------------- | ------------- | ----------------- |\n```\n\n| 标题1                    | 标题2           | 标题3               |\n| ---------------------- | ------------- | ----------------- |\n| 左对齐                    | 居中            | 右对齐               |\n| ---------------------- | ------------- | ----------------- |\n\n## Flowchart\n\n```flowchart\nstart=>start: start\noperation1=>operation: operation1\nisSuccess=>condition: success?\noperation2=>operation: operation2\noperation3=>operation: operation3\noperation4=>operation: operation4\nend=>end: 结束\nstart->operation1->isSuccess\nisSuccess(yes)->operation2->end\nisSuccess(no)->operation3->operation4(right)->operation1\n```\n\n## Katex Formula\n\n$$\n1 +  \\frac{q^2}{(1-q)}+\\frac{q^6}{(1-q)(1-q^2)}+\\cdots=\\prod_{j=0}^{\\infty}\\frac{1}{(1-q^{5j+2})(1-q^{5j+3})},\\text{ for }\\lvert q\\rvert < 1.\n$$\n"
 
 export default {
   name: 'Editor',
@@ -148,8 +166,8 @@ export default {
   },
   data () {
     return {
-      fileInputCallback: () => {},
       status: 'Saved',
+      fileInputCallback: () => {},
       saveHandler: null,
       document: {
         id: null,
@@ -162,7 +180,8 @@ export default {
         // 'Saved locally': { variant: 'info', icon: 'check2' },
         Unsaved: { variant: 'warning', icon: 'exclamation' },
         Initializing: { variant: 'secondary', icon: 'cloud-download' },
-      }
+      },
+      showButtons: true,
     }
   },
   // watch: {
@@ -173,6 +192,10 @@ export default {
   //   }
   // },
   methods: {
+    mousemoveHandler(event) {
+      // console.log(event)
+      this.showButtons = event.clientX < 0.2 * document.body.clientWidth
+    },
     beforeRouteUpdate(to, from, next) {
       if (to.params.id != this.document.id) {
         this.fetchData()
@@ -305,5 +328,12 @@ export default {
   position: fixed;
   top: 4vh;
   right: 2vw;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
