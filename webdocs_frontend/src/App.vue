@@ -47,6 +47,71 @@ export default {
     NavBar,
     LoginModal,
   },
+  created() {
+    this.axios.interceptors.response.use(res => res, err => {
+      err.needHandle = true
+      if (!err.response) {
+        err.needHandle = false
+        this.$bvToast.toast(this.$t('Fail to connect server'), {
+          title: this.$t('Network Error'),
+          variant: 'secondary',
+          autoHideDelay: 4000,
+          solid: true
+        })
+      } else {
+        //! this should be the only `console.log` of network request
+        console.log(err.response)
+        switch (err.response.status) {
+          case 400:
+            // Bad Request: most of these are validation error.
+            // Should be processed by the caller.
+            break
+          case 401:
+            // Unauthorized: probably not login.
+            // If 401 is returned, it is probable that you forget to
+            // call `checkLogin()`.
+
+            // clear user if token invalid
+            this.$store.commit('setUserState', null)
+            break
+          case 403:
+            // Forbidden: user does not have permission.
+            err.needHandle = false
+            this.$bvToast.toast(this.$t('You do not have permission'), {
+              title: this.$t('Forbidden'),
+              variant: 'secondary',
+              autoHideDelay: 4000,
+              solid: true
+            })
+            break
+          case 404:
+            // Not Found: the resource is not existed.
+            // Should be processed by the caller.
+            break
+          case 500:
+            // Internal Server Error
+            err.needHandle = false
+            this.$bvToast.toast(this.$t('It seems some error occured in the server'), {
+              title: this.$t('Internal Server Error'),
+              variant: 'secondary',
+              autoHideDelay: 4000,
+              solid: true
+            })
+            break
+          default:
+            err.needHandle = false
+            this.$bvToast.toast(this.$t('Unknown status code ') + err.response.status, {
+              title: this.$t('Unknown Error'),
+              variant: 'secondary',
+              autoHideDelay: 4000,
+              solid: true
+            })
+            break
+        }
+      }
+      return Promise.reject(err)
+    })
+  },
   methods: {
     login() {
       return this.$refs['login-modal'].login()
