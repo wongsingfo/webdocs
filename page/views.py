@@ -57,7 +57,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ['title', 'owner']
+    filterset_fields = ['title', 'owner__username']
     search_fields = ['=id', '^title', '^owner__username']
     ordering_fields = ['id', 'owner', 'created', 'last_modified']
 

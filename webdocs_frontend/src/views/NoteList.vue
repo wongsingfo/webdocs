@@ -58,6 +58,13 @@
         :fields="fields"
         primary-key="id"
       >
+        <template #table-busy>
+          <div class="text-center text-primary my-2">
+            <b-spinner class="align-middle mr-2" />
+            <strong>{{ $t('Loading...') }}</strong>
+          </div>
+        </template>
+
         <template #cell(title)="row">
           <b-link :to="`/note/${row.item.id}`">
             {{ row.value }}
