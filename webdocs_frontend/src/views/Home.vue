@@ -37,14 +37,14 @@
                   {{ note.title }}
                 </b-link>
               </h4>
-              <em>last modified at {{ note.lastModified.toLocaleDateString()}}, {{ note.lastModified.toLocaleTimeString() }}</em>
+              <em>last modified at {{ note.lastModified.toLocaleString() }}</em>
             </div>
             <p
               class="mb-2"
               style="text-align: left"
             >
               <!-- {{ 'Here is abstract.' }} -->
-              by {{ note.owner }}
+              by {{ note.owner.username }}
             </p>
             <hr>
           </div>

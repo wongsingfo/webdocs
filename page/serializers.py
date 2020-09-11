@@ -3,9 +3,15 @@ from rest_framework import serializers
 
 from page.models import Document, Image
 
+class UserConciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
 
 class DocumentSerializer(serializers.HyperlinkedModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = UserConciseSerializer()
+    created = serializers.ReadOnlyField()
+    last_modified = serializers.ReadOnlyField()
 
     class Meta:
         model = Document

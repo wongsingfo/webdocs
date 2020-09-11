@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 from django.views import View
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .forms import DocumentForm, ImageForm
 from .models import Document, Image
@@ -51,6 +52,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
         IsOwnerOrReadOnly,
     ]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ['title', 'owner']
+    search_fields = ['=id', '^title', '^owner__username']
+    ordering_fields = ['id', 'owner', 'created', 'last_modified']
+
 
     # overrides method of class CreateModelMixin.
     def perform_create(self, serializer):

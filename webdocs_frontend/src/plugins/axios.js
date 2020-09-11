@@ -4,11 +4,11 @@ import store from '@/store'
 
 const TIME_FIELD = /created|last_modified/
 
-function camelCase (str) {
+export function camelCase (str) {
   return str.replace(/_([a-z])/g, match => match[1].toUpperCase())
 }
 
-function snakeCase (str) {
+export function snakeCase (str) {
   return str.replace(/[A-Z]/g, match => '_' + match[0].toLowerCase())
 }
 

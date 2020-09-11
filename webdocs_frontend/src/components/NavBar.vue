@@ -132,9 +132,6 @@ export default {
       this.$store.commit('setUserState', null)
       this.$router.push('/')
     },
-    $t(a) {
-      return a
-    },
     changeLocale (lang) {
       loadLanguageAsync(lang)
     }

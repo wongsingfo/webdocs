@@ -22,9 +22,9 @@ class Document(models.Model):
     # Automatically set the field to now every time the object is saved.
     last_modified = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        # The default ordering for the object, for use when obtaining lists of objects
-        ordering = ('-last_modified',)
+    # class Meta:
+    #     # The default ordering for the object, for use when obtaining lists of objects
+    #     ordering = ('-last_modified',)
 
     def __str__(self) -> str:
         return self.title

@@ -107,7 +107,6 @@ export default {
     // this.$store.commit('setLoginFunc', this.login)
   },
   methods: {
-    $t(a) { return a },
     async submit(event) {
       // event.preventDefault()
       try {

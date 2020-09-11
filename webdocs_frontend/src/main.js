@@ -3,6 +3,7 @@ import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import store from './store'
+import i18n from './plugins/i18n'
 import './plugins/axios.js'
 import UserStatus from './plugins/userStatus.js'
 
@@ -20,5 +21,6 @@ Vue.config.productionTip = false
 window.appRoot = new Vue({
   router,
   store,
+  i18n,
   render: h => h(App)
 }).$mount('#app')

@@ -203,7 +203,6 @@ export default {
           })
       }
     },
-    $t(a) {return a},
     docChangeHandler(newDoc) {
       this.document = newDoc
     },

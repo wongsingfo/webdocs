@@ -16,11 +16,11 @@
         @keydown.enter.prevent="keydownCallback()"
       />
       <h5>Author</h5>
-      <p>{{ document.owner }}</p>
+      <p>{{ document.owner.username }}</p>
       <h5>Create Time</h5>
-      <p>{{ document.created.toLocaleDateString() }}, {{ document.created.toLocaleTimeString() }}</p>
+      <p>{{ document.created.toLocaleString() }}</p>
       <h5>Last Modified Time</h5>
-      <p>{{ document.lastModified.toLocaleDateString() }}, {{ document.lastModified.toLocaleTimeString() }}</p>
+      <p>{{ document.lastModified.toLocaleString() }}</p>
     </div>
   </b-sidebar>
 </template>

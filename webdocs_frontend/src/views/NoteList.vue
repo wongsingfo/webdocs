@@ -1,27 +1,123 @@
 <template>
-  <div class="home">
-    这里打算放一个表格展示该用户的所有笔记
-  </div>
+  <b-container>
+    <div align="center">
+      <h2> All Notes </h2>
+    </div>
+    <b-row>
+      <b-col
+        cols="12"
+        md="4"
+        class="px-0 my-3"
+      >
+        <b-input-group>
+          <b-form-input
+            v-model="filter"
+            :placeholder="$t(`Search `) + `${itemName}`"
+            debounce="500"
+          />
+          <b-input-group-append>
+            <b-button
+              size="sm"
+              :disabled="!filter"
+              @click="filter = ''"
+            >
+              {{ $t('Clear') }}
+            </b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </b-col>
+      <b-col
+        cols="12"
+        md="8"
+        class="px-0 my-3"
+        align="right"
+      >
+        <!-- <slot name="buttons" /> -->
+
+        <b-button
+          variant="outline-dark"
+          pill
+          @click="$refs['note-table'].refresh()"
+        >
+          {{ $t('Refresh') }}
+        </b-button>
+      </b-col>
+
+      <b-table
+        ref="note-table"
+        striped
+        hover
+        show-empty
+        responsive
+        :filter="filter"
+        :per-page="perPage"
+        :current-page="currentPage"
+        :empty-text="$t('There are no records to show')"
+        :empty-filtered-text="$t('There are no records matching your request')"
+        :items="provider"
+        :fields="fields"
+        primary-key="id"
+      >
+        <template #cell(title)="row">
+          <b-link :to="`/note/${row.item.id}`">
+            {{ row.value }}
+          </b-link>
+        </template>
+      </b-table>
+
+      <b-col cols="12">
+        <div class="mt-3">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            align="center"
+            aria-controls="note-table"
+          />
+        </div>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
-// @ is an alias to /src
-// import HelloWorld from '@/components/HelloWorld.vue'
+import { snakeCase } from '@/plugins/axios'
 
 export default {
-  name: 'Home',
-  // components: {
-  //   HelloWorld
-  // }
+  name: 'NoteList',
   data() {
     return {
-      recentNotes: [
-        {
-          id: 1,
-          title: 'Hello',
-          lastModified: new Date(),
-        }
-      ],
+      perPage: 10,
+      currentPage: 1,
+      itemName: 'note',
+      totalRows: 0,
+      filter: '',
+      fields: [
+        { key: 'id', sortable: true },
+        { key: 'title' },
+        { key: 'owner', sortable: true, formatter: x => x.username },
+        { key: 'created', sortable: true, formatter: t => t.toLocaleString() },
+        { key: 'lastModified', sortable: true, formatter: t => t.toLocaleString() },
+      ]
+    }
+  },
+  methods: {
+    async provider(ctx) {
+      try {
+        const res = await this.axios.get(`/api/documents/`, {
+          params: {
+            limit: ctx.perPage,
+            offset: ctx.perPage * (ctx.currentPage - 1),
+            search: ctx.filter,
+            ordering: (ctx.sortDesc ? '-' : '') + snakeCase(ctx.sortBy)
+          }
+        })
+        this.totalRows = res.data.count
+        return res.data.results
+      } catch (err) {
+        console.log(err)
+        return []
+      }
     }
   }
 }
