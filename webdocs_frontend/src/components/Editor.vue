@@ -4,7 +4,7 @@
       <div
         class="button-area"
         @mouseleave="showButtons = false"
-        @mouseenter="showButtons = true"
+        @mousemove="showButtons = true"
       >
         <transition name="fade">
           <div v-show="showButtons">
@@ -59,7 +59,13 @@
       <NoteDetailSidebar id="editor-note-detail" :document="document" @doc-change="docChangeHandler"/>
       <TOCSidebar id="toc-sidebar" :toc="toc" />
     </b-overlay>
-    <input type="file" ref="file-input" @change="fileInputCallback" v-show="false"/>
+    <input
+      v-show="false"
+      ref="file-input"
+      type="file"
+      accept="image/*"
+      @change="fileInputCallback"
+    />
   </div>
 </template>
 
@@ -80,6 +86,15 @@ import NoteDetailSidebar from '@/components/NoteDetailSidebar.vue'
 import TOCSidebar from '@/components/TOCSidebar.vue'
 
 // const example = "# Muya Example\n\n## English Text\n\n#### Sponsor Mark Text Development\n\nMark Text is an MIT licensed open source project, you will always be able to download the latest version from [GitHub release page](https://github.com/marktext/marktext/releases). Mark Text is still in development, and its development is inseparable from all sponsors. I hope you join them:\n\n## Chinese Text\n\n9月1日，外交部发言人华春莹主持例行记者会。有记者就中印边境最新事态提问。\n\n华春莹表示，关于边界等历史遗留的问题，中方历来主张通过和平友好协商，找到公平合理和双方都能接受的解决方案。一段时间以来，双方在各个层级进行了多次接触和会谈，作出积极的努力来寻求和平解决边界的一些分歧或争端，共同维护中印边境地区的和平与稳定。\n\n但是在8月31日，印军破坏了前期双方多层级会谈会晤达成的共识，在中印边界的西段班公湖以南地区以及热钦山口附近再次非法越线，公然挑衅，造成边境局势再度紧张。印方的行径严重侵犯了中方的领土主权，也严重违反了两国相关的协定、协议和重要的共识，破坏了边境地区的和平与安宁。这与双方一段时间以来推动现地局势缓和降温的努力是背道而驰的，中方对此坚决反对并且已经向印方提出了严正交涉，要求印方停止一切挑衅行为，立即撤回非法越线的人员，立即停止任何导致局势紧张、升级和复杂化的举动。\n\n(本文来自澎湃新闻，更多原创资讯请下载“澎湃新闻”APP)\n\n![](https://ss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/u=3604977702,2490965591&fm=173&app=49&f=JPEG?w=312&h=208&s=EF924781C4C074FC9499958A0300E091)\n\n## Code Block\n\n```js\nconst arr1 = [1,2,3,[1,2,3,4, [2,3,4]]]function flatten(input) { // flatten deep using a stack  const stack = [...input]  const res = []  while (stack.length) {    const next = stack.pop()    if (Array.isArray(next)) {      stack.push(...next)    } else {      res.push(next)    }  }  return res.reverse()}flatten(arr1)// [1, 2, 3, 1, 2, 3, 4, 2, 3, 4]\n```\n\n## Table\n\n```\n| 标题1 | 标题2 | 标题3 || :--  | :--: | ----: || 左对齐 | 居中 | 右对齐 || ---------------------- | ------------- | ----------------- |\n```\n\n| 标题1                    | 标题2           | 标题3               |\n| ---------------------- | ------------- | ----------------- |\n| 左对齐                    | 居中            | 右对齐               |\n| ---------------------- | ------------- | ----------------- |\n\n## Flowchart\n\n```flowchart\nstart=>start: start\noperation1=>operation: operation1\nisSuccess=>condition: success?\noperation2=>operation: operation2\noperation3=>operation: operation3\noperation4=>operation: operation4\nend=>end: 结束\nstart->operation1->isSuccess\nisSuccess(yes)->operation2->end\nisSuccess(no)->operation3->operation4(right)->operation1\n```\n\n## Katex Formula\n\n$$\n1 +  \\frac{q^2}{(1-q)}+\\frac{q^6}{(1-q)(1-q^2)}+\\cdots=\\prod_{j=0}^{\\infty}\\frac{1}{(1-q^{5j+2})(1-q^{5j+3})},\\text{ for }\\lvert q\\rvert < 1.\n$$\n"
+
+Muya.use(TablePicker)
+Muya.use(QuickInsert)
+Muya.use(CodePicker)
+Muya.use(EmojiPicker)
+Muya.use(ImagePathPicker)
+Muya.use(ImageSelector)
+Muya.use(FormatPicker)
+Muya.use(FrontMenu)
 
 function cleanLine(line) {
   return line.replace(/^#+ /, '')
@@ -108,73 +123,20 @@ export default {
   },
   created () {
     this.$nextTick(() => {
-      const ele = this.$refs.editor
-
-      Muya.use(TablePicker)
-      Muya.use(QuickInsert)
-      Muya.use(CodePicker)
-      Muya.use(EmojiPicker)
-      Muya.use(ImagePathPicker)
-      Muya.use(ImageSelector)
-      Muya.use(FormatPicker)
-      Muya.use(FrontMenu)
-
-      this.editor = new Muya(ele, {
+      this.editor = new Muya(this.$refs.editor, {
         // markdown: `# 欢迎使用Webdocs`,
         markdown: this.document.body,
-        imageAction: async (obj) => {
+        imageAction: async (obj, id, name) => {
+          // console.log('imageAction:', obj, ' ', id, ' ', name)
           if (obj instanceof File) {
-            // 在这里把图片上传到服务器，返回服务器返回的路径
-            const form = new FormData()
-            form.append('image', obj, obj.name)
-            let host = window.location.host
-            let protocol = window.location.protocol
-            // for dev
-            if (host.search('localhost') !== -1) {
-              host = 'localhost:8000'
-            }
-            form.append('document', `${protocol}//${host}/api/documents/${this.document.id}/`)
-            const res = await this.axios.post(`/api/images/`, form, {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            })
-            return res.data.image
-            // return res.data.image.match(/\/uploads\/images.*$/)[0]
-            // return await new Promise(resolve => {
-            //   const reader = new FileReader()
-            //   reader.onload = event => {
-            //     resolve(event.target.result)
-            //   }
-            //   reader.readAsDataURL(obj)
-            // })
+            return await this.uploadImage(obj)
           } else {
-            // console.log('imageAction:', obj)
             return obj
           }
-          // await new Promise(r => setTimeout(r, 2000))
-          // return 'https://i0.hdslb.com/bfs/archive/e62b6b095ef38dfb742687f11e4b570dde420b5d.png'
         },
-        imagePathPicker: async () => { // return the src/path
-          const file = await this.selectFile()
-          return file
-          // return await new Promise(resolve => {
-          //   const reader = new FileReader()
-          //   reader.onload = event => {
-          //     resolve(event.target.result)
-          //   }
-          //   reader.readAsDataURL(file)
-          // })
-          // return 'https://i0.hdslb.com/bfs/archive/e62b6b095ef38dfb742687f11e4b570dde420b5d.png'
-        }
+        imagePathPicker: async () => await this.uploadImage(await this.selectFile()),
       })
 
-      const delaySave = () => {
-        if (this.saveHandler != null) {
-          clearTimeout(this.saveHandler)
-        }
-        this.saveHandler = setTimeout(this.save, 10000)
-      }
       this.editor.on('change', changes => {
         // console.log(changes, this.document)
         // TODO: fix muya import problem of \n
@@ -183,7 +145,9 @@ export default {
         }
         this.toc = this.editor.getTOC()
         this.status = 'Unsaved'
-        delaySave()
+
+        clearTimeout(this.saveHandler)
+        this.saveHandler = setTimeout(this.save, 10000)
       })
 
       this.fetchData()
@@ -206,21 +170,10 @@ export default {
         Unsaved: { variant: 'warning', icon: 'exclamation' },
         Initializing: { variant: 'secondary', icon: 'cloud-download' },
       },
-      showButtons: true,
+      showButtons: false,
     }
   },
-  // watch: {
-  //   '$route'() {
-  //     if (this.$route.name == 'NoteEdit' && Number(this.$route.params.id) !== this.document.id) {
-  //       this.fetchData()
-  //     }
-  //   }
-  // },
   methods: {
-    mousemoveHandler(event) {
-      // console.log(event)
-      this.showButtons = event.clientX < 0.2 * document.body.clientWidth
-    },
     beforeRouteUpdate(to, from, next) {
       if (to.params.id != this.document.id) {
         this.fetchData()
@@ -301,6 +254,25 @@ export default {
         fileInput.click()
       })
       // console.log(this.$refs['file-input'].files)
+    },
+    async uploadImage(image) {
+      const form = new FormData()
+      form.append('image', image, image.name)
+      form.append('document', this.document.id)
+      const res = await this.axios.post(`/api/images/`, form, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return res.data.image
+      // read as base64 encoding
+      // return await new Promise(resolve => {
+      //   const reader = new FileReader()
+      //   reader.onload = event => {
+      //     resolve(event.target.result)
+      //   }
+      //   reader.readAsDataURL(obj)
+      // })
     },
     keydownHandler (event) {
       if ((event.ctrlKey || event.metaKey) && event.keyCode == 83 && !event.altKey && !event.shiftKey) {

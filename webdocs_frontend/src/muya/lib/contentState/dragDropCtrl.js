@@ -158,7 +158,7 @@ const dragDropCtrl = ContentState => {
         }
         this.render()
 
-        const nSrc = await this.muya.options.imageAction(path, id, name)
+        const nSrc = await this.muya.options.imageAction(image, id, name)
         const { src } = getImageSrc(path)
         if (src) {
           this.stateRender.urlMap.set(nSrc, src)
