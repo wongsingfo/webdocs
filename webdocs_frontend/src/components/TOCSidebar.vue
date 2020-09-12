@@ -29,11 +29,6 @@ export default {
     id: String,
     toc: Array
   },
-  data() {
-    return {
-
-    }
-  }
 }
 </script>
 

@@ -13,10 +13,10 @@
               pill
               variant="outline-dark"
               style="z-index: 20"
-              @click="$router.go(-1)"
+              @click="handleBackButton"
             >
               <b-icon icon="arrow-left"></b-icon>
-              Back
+              {{ this.historyLength > 1 ? 'Back' : 'Home' }}
             </b-button>
             <b-button
               id="sidebar-button"
@@ -171,12 +171,21 @@ export default {
         Initializing: { variant: 'secondary', icon: 'cloud-download' },
       },
       showButtons: false,
+      historyLength: window.history.length
     }
   },
   methods: {
+    handleBackButton() {
+      if (this.historyLength > 1) {
+        this.$router.go(this.historyLength - window.history.length - 1)
+      } else {
+        this.$router.replace('/')
+      }
+    },
     beforeRouteUpdate(to, from, next) {
       if (to.params.id != this.document.id) {
         this.fetchData()
+        this.historyLength = window.history.length + 1
       }
     },
     beforeRouteLeave(to, from, next) {
