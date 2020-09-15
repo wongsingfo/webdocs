@@ -19,3 +19,5 @@ python manage.py migrate
    ```js
    const nSrc = await this.muya.options.imageAction(image, id, name)
    ```
+
+2. 将css文件改成scss文件

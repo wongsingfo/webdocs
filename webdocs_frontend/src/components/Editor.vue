@@ -10,20 +10,20 @@
           <div v-show="showButtons">
             <b-button
               id="return-button"
+              class="left-side-button"
               pill
               variant="outline-dark"
-              style="z-index: 20"
               @click="handleBackButton"
             >
               <b-icon icon="arrow-left"></b-icon>
               {{ this.historyLength > 1 ? 'Back' : 'Home' }}
             </b-button>
             <b-button
-              id="sidebar-button"
+              id="detail-button"
               v-b-toggle.editor-note-detail
+              class="left-side-button"
               pill
               variant="outline-dark"
-              style="z-index: 20"
             >
               <b-icon icon="card-list"></b-icon>
               Note Details
@@ -31,12 +31,22 @@
             <b-button
               id="toc-button"
               v-b-toggle.toc-sidebar
+              class="left-side-button"
               pill
               variant="outline-dark"
-              style="z-index: 20"
             >
               <b-icon icon="bar-chart-steps"></b-icon>
               Table of Contents
+            </b-button>
+            <b-button
+              id="refresh-button"
+              class="left-side-button"
+              pill
+              variant="outline-dark"
+              @click="fetchData"
+            >
+              <b-icon icon="arrow-clockwise"></b-icon>
+              Refresh
             </b-button>
           </div>
         </transition>
@@ -56,7 +66,7 @@
       <div id="editor-wrapper" class="editor" @keydown="keydownHandler">
         <div ref="editor"></div>
       </div>
-      <NoteDetailSidebar id="editor-note-detail" :document="document" @doc-change="docChangeHandler"/>
+      <NoteDetailSidebar id="editor-note-detail" :document="document"/>
       <TOCSidebar id="toc-sidebar" :toc="toc" />
     </b-overlay>
     <input
@@ -70,6 +80,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 import Muya from '@/muya/lib'
 import TablePicker from '@/muya/lib/ui/tablePicker'
 import QuickInsert from '@/muya/lib/ui/quickInsert'
@@ -121,59 +133,67 @@ export default {
     NoteDetailSidebar,
     TOCSidebar,
   },
-  created () {
-    this.$nextTick(() => {
-      this.editor = new Muya(this.$refs.editor, {
-        // markdown: `# 欢迎使用Webdocs`,
-        markdown: this.document.body,
-        imageAction: async (obj, id, name) => {
-          // console.log('imageAction:', obj, ' ', id, ' ', name)
-          if (obj instanceof File) {
-            return await this.uploadImage(obj)
-          } else {
-            return obj
-          }
-        },
-        imagePathPicker: async () => await this.uploadImage(await this.selectFile()),
-      })
+  async created () {
+    await this.$nextTick()
 
-      this.editor.on('change', changes => {
-        // console.log(changes, this.document)
-        // TODO: fix muya import problem of \n
-        if (this.status == 'Initializing' || changes.markdown.replace(/\n+$/, '') == this.document.body.replace(/\n+$/, '')) {
-          return
+    window.onbeforeunload = (event) => {
+      return this.status == 'Unsaved' ? true : null
+    }
+
+    this.editor = new Muya(this.$refs.editor, {
+      // markdown: `# 欢迎使用Webdocs`,
+      markdown: '',
+      imageAction: async (obj, id, name) => {
+        // console.log('imageAction:', obj, ' ', id, ' ', name)
+        if (obj instanceof File) {
+          return await this.uploadImage(obj)
+        } else {
+          return obj
         }
-        this.toc = this.editor.getTOC()
-        this.status = 'Unsaved'
-
-        clearTimeout(this.saveHandler)
-        this.saveHandler = setTimeout(this.save, 10000)
-      })
-
-      this.fetchData()
+      },
+      imagePathPicker: async () => await this.uploadImage(await this.selectFile()),
     })
+
+    this.editor.on('change', changes => {
+      // console.log(changes, this.document)
+      // TODO: fix muya import problem of \n
+      if (this.status == 'Initializing' || !this.document ||
+        changes.markdown.replace(/\n+$/, '') == this.document.body.replace(/\n+$/, '')) {
+        return
+      }
+      this.toc = this.editor.getTOC()
+      this.status = 'Unsaved'
+
+      clearTimeout(this.saveHandler)
+      this.saveHandler = setTimeout(this.save, 10000)
+    })
+
+    await this.$store.dispatch('initDB')
+    await this.fetchData()
+  },
+  beforeDestroy() {
+    window.onbeforeunload = this.savedOnbeforeunloadHandler
   },
   data () {
     return {
-      status: 'Saved',
+      status: 'Initializing',
       fileInputCallback: () => {},
       saveHandler: null,
-      document: {
-        id: null,
-        body: ''
-      },
+      document: null,
       toc: [],
       statusStyle: {
         Saved: { variant: 'success', icon: 'cloud-check' },
         Saving: { variant: 'secondary', icon: 'cloud-upload' },
-        // 'Saved locally': { variant: 'info', icon: 'check2' },
+        'Saved Locally': { variant: 'info', icon: 'check' },
         Unsaved: { variant: 'warning', icon: 'exclamation' },
         Initializing: { variant: 'secondary', icon: 'cloud-download' },
       },
       showButtons: false,
-      historyLength: window.history.length
+      historyLength: window.history.length,
+      savedOnbeforeunloadHandler: window.onbeforeunload,
     }
   },
+  computed: mapState(['db']),
   methods: {
     handleBackButton() {
       if (this.historyLength > 1) {
@@ -184,72 +204,112 @@ export default {
     },
     beforeRouteUpdate(to, from, next) {
       if (to.params.id != this.document.id) {
-        this.fetchData()
-        this.historyLength = window.history.length + 1
+        this.confirmSave().then(ok => {
+          if (ok) {
+            this.fetchData()
+            this.historyLength = window.history.length + 1
+          }
+        })
       }
     },
     beforeRouteLeave(to, from, next) {
       clearTimeout(this.saveHandler)
-      if (this.status == 'Saved') {
-        next()
-      } else {
-        this.$bvModal.msgBoxConfirm(this.$t('Save this note?'), {
-          title: this.$t('Not saved yet'),
-          centered: true,
-          okTitle: this.$t('Yes'),
-          cancelTitle: this.$t('No')
-        })
-          .then(ans => {
-            // 'ans' can be undefined
-            if (ans === true) {
-              this.save().then(() => {
-                if (this.status == 'Saved') {
-                  next()
-                }
-              })
-            } else if (ans === false) {
-              next()
-            }
-          })
-      }
+      this.confirmSave().then(ok => {
+        if (ok) {
+          next()
+        }
+      })
     },
-    docChangeHandler(newDoc) {
-      this.document = newDoc
+    async confirmSave() {
+      if (this.status != 'Unsaved') {
+        return true
+      }
+      const ans = await this.$bvModal.msgBoxConfirm(this.$t('Save this note?'), {
+        title: this.$t('Not saved yet'),
+        centered: true,
+        okTitle: this.$t('Yes'),
+        cancelTitle: this.$t('No')
+      })
+      if (ans === true) {
+        await this.save()
+      }
+      return this.status == 'Saved' || ans === false
     },
     async fetchData() {
+      if (!await this.confirmSave()) {
+        return
+      }
       this.status = 'Initializing'
       // this.editor.setMarkdown('')
-      const docId = this.$route.params.id
+      const docId = Number(this.$route.params.id)
+      let res
       try {
-        const res = await this.axios.get(`/api/documents/${docId}/`)
-        this.document = res.data
-        this.status = 'Saved'
-        this.editor.setMarkdown(this.document.body)
-        this.toc = this.editor.getTOC()
+        res = await this.axios.get(`/api/documents/${docId}/`)
       } catch (err) {
+        if (!err.repsonse) {
+          await this.localLoad(docId)
+          if (this.document) {
+            this.editor.setMarkdown(this.document.body)
+            this.toc = this.editor.getTOC()
+            this.status = 'Saved Locally'
+            return
+          }
+        }
         console.log(err)
         alert('Failed to load markdown, please retry...')
+        return
       }
+      await this.localLoad(docId)
+      if (this.document && res.data.lastModified < this.document.lastModified) {
+        // the local copy is newer, update server
+        this.axios.patch(`/api/documents/${this.document.id}/`, {
+          ...this.document,
+          lastSync: undefined
+        }).then(() => this.status = 'Saved', err => {
+          console.log(err)
+        })
+      } else {
+        res.data.lastSync = res.data.lastModified
+        await this.localSave(res.data)
+        this.status = 'Saved'
+      }
+      this.editor.setMarkdown(this.document.body)
+      this.toc = this.editor.getTOC()
+    },
+    async localLoad(id) {
+      const result = await this.db.$db.note.find(id)
+      this.document = result.length > 0 ? result[0] : null
+    },
+    async localSave(doc) {
+      this.document = doc
+      await this.db.$db.note.update(doc.id, doc, { upsert: true })
+      this.status = 'Saved Locally'
     },
     async save() {
       if (this.status == 'Saved' || this.status == 'Saving') {
         return
       }
       this.status = 'Saving'
-      // saved locally
-      // send save request to the server
       const markdown = this.editor.markdown
+      const newDoc = {
+        ...this.document,
+        body: markdown,
+        ...getTitleAndAbstract(markdown),
+        lastSync: undefined
+      }
       try {
-        const res = await this.axios.patch(`/api/documents/${this.document.id}/`, {
-          id: this.document.id,
-          body: markdown,
-          ...getTitleAndAbstract(markdown),
-        })
-        this.document = res.data
+        const res = await this.axios.patch(`/api/documents/${this.document.id}/`, newDoc)
+        res.data.lastSync = res.data.lastModified
+        await this.localSave(res.data)
         this.status = 'Saved'
       } catch (err) {
         console.log(err)
         this.status = 'Unsaved'
+        await this.localSave({
+          ...newDoc,
+          lastModified: new Date(),
+          lastSync: this.document.lastModified
+        })
       }
     },
     selectFile () {
@@ -315,22 +375,26 @@ export default {
   /* margin-top: 10px; */
 }
 
-#return-button {
+.left-side-button {
   position: fixed;
-  top: 4vh;
   left: 2vw;
+  z-index: 20;
 }
 
-#sidebar-button {
-  position: fixed;
+#return-button {
+  top: 4vh;
+}
+
+#detail-button {
   top: 12vh;
-  left: 2vw;
 }
 
 #toc-button {
-  position: fixed;
   top: 20vh;
-  left: 2vw;
+}
+
+#refresh-button {
+  top: 28vh;
 }
 
 #status-button {
@@ -345,6 +409,7 @@ export default {
   left: 0;
   width: 20vw;
   height: 100vh;
+  /* filter: blur(20px); */
 }
 
 .fade-enter-active, .fade-leave-active {

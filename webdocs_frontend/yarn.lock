@@ -5561,6 +5561,11 @@ indent-string@^4.0.0:
   resolved "https://registry.npm.taobao.org/indent-string/download/indent-string-4.0.0.tgz#624f8f4497d619b2d9768531d58f4122854d7251"
   integrity sha1-Yk+PRJfWGbLZdoUx1Y9BIoVNclE=
 
+indexeddbp@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.npm.taobao.org/indexeddbp/download/indexeddbp-0.1.6.tgz#75008d8a0a5b0eb9b5e86682f2fc05baae78a1e3"
+  integrity sha1-dQCNigpbDrm16GaC8vwFuq54oeM=
+
 indexes-of@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npm.taobao.org/indexes-of/download/indexes-of-1.0.1.tgz#f30f716c8e2bd346c7b67d3df3915566a7c05607"

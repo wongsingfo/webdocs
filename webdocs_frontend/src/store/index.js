@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import IndexedDBP from 'indexeddbp'
 
 Vue.use(Vuex)
 
@@ -20,6 +21,7 @@ export default new Vuex.Store({
     userToken: null,
     isLoading: false,
     loginFunc: null,
+    db: null,
   },
   mutations: {
     setUserState (state, userState) {
@@ -52,10 +54,21 @@ export default new Vuex.Store({
     },
     clearUserToken (state) {
       state.userToken = null
+    },
+    setDB(state, db) {
+      state.db = db
     }
   },
   actions: {
-
+    async initDB({ commit, state }) {
+      if (state.db !== null) {
+        return
+      }
+      const db = new IndexedDBP({ name: 'webdocs' })
+      await db.init()
+      await db.useObjectStore('note', { keyPath: 'id' })
+      commit('setDB', db)
+    }
   },
   plugins: [ readLocalStorage ],
   strict: process.env.NODE_ENV !== 'production'
