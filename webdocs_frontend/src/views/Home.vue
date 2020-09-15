@@ -150,7 +150,8 @@ export default {
     async newNote() {
       await this.needLogin()
       const res = await this.axios.post(`/api/documents/`, {
-        title: this.newNoteTitle
+        title: this.newNoteTitle,
+        body: '# ' + this.newNoteTitle + '\n\n'
       })
       this.$router.push(`/note/${res.data.id}`)
     }
