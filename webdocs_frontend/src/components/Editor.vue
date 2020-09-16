@@ -53,6 +53,7 @@
       </div>
       <b-button
         id="status-button"
+        :disabled="!editable"
         pill
         :variant="statusStyle[status].variant"
         style="z-index: 20"
@@ -60,8 +61,8 @@
         title="Click to save!"
         @click="save"
       >
-        <b-icon :icon="statusStyle[status].icon"></b-icon>
-        {{ status }}
+        <b-icon v-if="editable" :icon="statusStyle[status].icon" />
+        {{ editable ? status : 'Readonly' }}
       </b-button>
       <div id="editor-wrapper" class="editor" @keydown="keydownHandler">
         <div ref="editor"></div>
@@ -142,7 +143,7 @@ export default {
 
     this.editor = new Muya(this.$refs.editor, {
       // markdown: `# 欢迎使用Webdocs`,
-      markdown: '',
+      // markdown: '',
       imageAction: async (obj, id, name) => {
         // console.log('imageAction:', obj, ' ', id, ' ', name)
         if (obj instanceof File) {
@@ -154,14 +155,13 @@ export default {
       imagePathPicker: async () => await this.uploadImage(await this.selectFile()),
     })
 
-    this.editor.on('change', changes => {
-      // console.log(changes, this.document)
+    this.editor.on('change', ({ markdown, wordCount, cursor, history, toc }) => {
       // TODO: fix muya import problem of \n
       if (this.status == 'Initializing' || !this.document ||
-        changes.markdown.replace(/\n+$/, '') == this.document.body.replace(/\n+$/, '')) {
+        markdown.replace(/\n+$/, '') == this.document.body.replace(/\n+$/, '')) {
         return
       }
-      this.toc = this.editor.getTOC()
+      this.toc = toc
       this.status = 'Unsaved'
 
       clearTimeout(this.saveHandler)
@@ -193,7 +193,12 @@ export default {
       savedOnbeforeunloadHandler: window.onbeforeunload,
     }
   },
-  computed: mapState(['db']),
+  computed: {
+    ...mapState(['db']),
+    editable() {
+      return this.document && this.document.owner.username === this.user
+    }
+  },
   methods: {
     handleBackButton() {
       if (this.historyLength > 1) {
@@ -259,18 +264,23 @@ export default {
         alert('Failed to load markdown, please retry...')
         return
       }
-      await this.localLoad(docId)
-      if (this.document && res.data.lastModified < this.document.lastModified) {
-        // the local copy is newer, update server
-        this.axios.patch(`/api/documents/${this.document.id}/`, {
-          ...this.document,
-          lastSync: undefined
-        }).then(() => this.status = 'Saved', err => {
-          console.log(err)
-        })
+      if (this.editable) {
+        await this.localLoad(docId)
+        if (this.document && res.data.lastModified < this.document.lastModified) {
+          // the local copy is newer, update server
+          this.axios.patch(`/api/documents/${this.document.id}/`, {
+            ...this.document,
+            lastSync: undefined
+          }).then(() => this.status = 'Saved', err => {
+            console.log(err)
+          })
+        } else {
+          res.data.lastSync = res.data.lastModified
+          await this.localSave(res.data)
+          this.status = 'Saved'
+        }
       } else {
-        res.data.lastSync = res.data.lastModified
-        await this.localSave(res.data)
+        this.document = res.data
         this.status = 'Saved'
       }
       this.editor.setMarkdown(this.document.body)
@@ -286,7 +296,7 @@ export default {
       this.status = 'Saved Locally'
     },
     async save() {
-      if (this.status == 'Saved' || this.status == 'Saving') {
+      if (!this.editable || this.status == 'Saved' || this.status == 'Saving') {
         return
       }
       this.status = 'Saving'
@@ -334,7 +344,7 @@ export default {
         }
       })
       let imageUrl = res.data.image
-      if (window.location.hostname !== 'localhost' && imageUrl.startsWith('http://')) {
+      if (process.env.NODE_ENV !== 'development' && imageUrl.startsWith('http://')) {
         imageUrl = 'https' + imageUrl.substring(4)
       }
       return imageUrl

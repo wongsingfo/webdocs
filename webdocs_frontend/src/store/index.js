@@ -68,6 +68,11 @@ export default new Vuex.Store({
       await db.init()
       await db.useObjectStore('note', { keyPath: 'id' })
       commit('setDB', db)
+    },
+    async clearLocalDB({ state }) {
+      if (state.db.containObjectStore('note')) {
+        await state.db.deleteObjectStore('note')
+      }
     }
   },
   plugins: [ readLocalStorage ],

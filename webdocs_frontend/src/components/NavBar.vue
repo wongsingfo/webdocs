@@ -129,6 +129,7 @@ export default {
   methods: {
     async logout () {
       const res = await this.axios.post('/api/auth/logout/')
+      await this.$store.dispatch('clearLocalDB')
       this.$store.commit('setUserState', null)
       this.$router.push('/')
     },

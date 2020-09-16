@@ -15,8 +15,8 @@
       <p>{{ document.created.toLocaleString() }}</p>
       <h5>Last Modified Time</h5>
       <p>{{ document.lastModified.toLocaleString() }}</p>
-      <h5>Last Sync Time</h5>
-      <p>{{ document.lastSync.toLocaleString() }}</p>
+      <h5 v-if="document.lastSync">Last Sync Time</h5>
+      <p v-if="document.lastSync">{{ document.lastSync.toLocaleString() }}</p>
     </div>
   </b-sidebar>
 </template>
