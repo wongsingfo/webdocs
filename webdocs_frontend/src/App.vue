@@ -111,6 +111,8 @@ export default {
       }
       return Promise.reject(err)
     })
+
+    document.querySelector('#first-page-spinner').remove()
   },
   methods: {
     login() {

@@ -137,7 +137,6 @@ export default {
     },
     toggleItemDetails(item, index, event) {
       item._showDetails = !item._showDetails
-      console.log(item, index, event)
     }
   }
 }
