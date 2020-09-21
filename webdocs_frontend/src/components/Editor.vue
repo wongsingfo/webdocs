@@ -12,7 +12,6 @@
               id="return-button"
               class="left-side-button"
               pill
-              variant="outline-dark"
               @click="handleBackButton"
             >
               <b-icon icon="arrow-left"></b-icon>
@@ -23,26 +22,23 @@
               v-b-toggle.editor-note-detail
               class="left-side-button"
               pill
-              variant="outline-dark"
             >
               <b-icon icon="card-list"></b-icon>
-              Note Details
+              Details
             </b-button>
             <b-button
               id="toc-button"
               v-b-toggle.toc-sidebar
               class="left-side-button"
               pill
-              variant="outline-dark"
             >
               <b-icon icon="bar-chart-steps"></b-icon>
-              Table of Contents
+              TOC
             </b-button>
             <b-button
               id="refresh-button"
               class="left-side-button"
               pill
-              variant="outline-dark"
               @click="fetchData"
             >
               <b-icon icon="arrow-clockwise"></b-icon>
@@ -414,7 +410,7 @@ export default {
 }
 
 .button-area {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 20vw;
