@@ -414,12 +414,12 @@ export default {
   top: 0;
   left: 0;
   width: 20vw;
-  height: 100vh;
+  height: 100%;
   /* filter: blur(20px); */
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s;
+  transition: opacity .2s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
