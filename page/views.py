@@ -9,7 +9,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .forms import DocumentForm, ImageForm
 from .models import Document, Image
 
-
 # Create your views here.
 from .permissions import IsOwnerOrReadOnly
 from .serializers import UserSerializer, DocumentSerializer, ImageSerializer
@@ -60,7 +59,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['title', 'owner__username']
     search_fields = ['=id', 'title', 'owner__username']
     ordering_fields = ['id', 'owner', 'created', 'last_modified']
-
 
     # overrides method of class CreateModelMixin.
     def perform_create(self, serializer):

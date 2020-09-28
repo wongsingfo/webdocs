@@ -2,7 +2,7 @@
   <b-sidebar
     :id="id"
     title="Table of Contents"
-    shadow
+    shadow="lg"
   >
     <div class="px-3 py-2">
       <div
@@ -34,7 +34,7 @@ export default {
 
 <style>
 .toc-header-1 {
-  text-indent: 0rem;
+  text-indent: 0;
 }
 .toc-header-2 {
   text-indent: 1rem;

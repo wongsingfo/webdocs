@@ -2,7 +2,7 @@
   <b-sidebar
     :id="id"
     title="Note Detail"
-    shadow
+    shadow="lg"
   >
     <div class="px-3 py-2" v-if="document">
       <h5>Title</h5>

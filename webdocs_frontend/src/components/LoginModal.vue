@@ -93,7 +93,7 @@ export default {
         //   this.$router.push('/')
         // }
       } catch (err) {
-        if (err.response.status == 400) {
+        if (err.response.status === 400) {
           this.haveErr = true
         } else {
           console.log(err.response)

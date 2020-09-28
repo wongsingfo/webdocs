@@ -112,8 +112,8 @@ function cleanLine(line) {
 function cleanText(markdown) {
   return markdown
     .replace(/```.*```/g, '')
-    .replace(/!\[([^\]]*)\]\(.[^\)]*\)/g, '')
-    .replace(/\[([^\]]*)\]\(.[^\)]*\)/g, (...match) => match[1])
+    .replace(/!\[([^\]]*)]\(.[^)]*\)/g, '')
+    .replace(/\[([^\]]*)]\(.[^)]*\)/g, (...match) => match[1])
 }
 
 function getTitleAndAbstract(markdown) {
@@ -134,7 +134,7 @@ export default {
     await this.$nextTick()
 
     window.onbeforeunload = (event) => {
-      return this.status == 'Unsaved' ? true : null
+      return this.status === 'Unsaved' ? true : null
     }
 
     this.editor = new Muya(this.$refs.editor, {
@@ -153,8 +153,8 @@ export default {
 
     this.editor.on('change', ({ markdown, wordCount, cursor, history, toc }) => {
       // TODO: fix muya import problem of \n
-      if (this.status == 'Initializing' || !this.document ||
-        markdown.replace(/\n+$/, '') == this.document.body.replace(/\n+$/, '')) {
+      if (this.status === 'Initializing' || !this.document ||
+        markdown.replace(/\n+$/, '') === this.document.body.replace(/\n+$/, '')) {
         return
       }
       this.toc = toc
@@ -204,7 +204,7 @@ export default {
       }
     },
     beforeRouteUpdate(to, from, next) {
-      if (to.params.id != this.document.id) {
+      if (to.params.id !== this.document.id) {
         this.confirmSave().then(ok => {
           if (ok) {
             this.fetchData()
@@ -222,7 +222,7 @@ export default {
       })
     },
     async confirmSave() {
-      if (this.status != 'Unsaved') {
+      if (this.status !== 'Unsaved') {
         return true
       }
       const ans = await this.$bvModal.msgBoxConfirm(this.$t('Save this note?'), {
@@ -234,7 +234,7 @@ export default {
       if (ans === true) {
         await this.save()
       }
-      return this.status == 'Saved' || ans === false
+      return this.status === 'Saved' || ans === false
     },
     async fetchData() {
       if (!await this.confirmSave()) {
@@ -292,7 +292,7 @@ export default {
       this.status = 'Saved Locally'
     },
     async save() {
-      if (!this.editable || this.status == 'Saved' || this.status == 'Saving') {
+      if (!this.editable || this.status === 'Saved' || this.status === 'Saving') {
         return
       }
       this.status = 'Saving'
@@ -354,15 +354,15 @@ export default {
       // })
     },
     keydownHandler (event) {
-      if ((event.ctrlKey || event.metaKey) && event.keyCode == 83 && !event.altKey && !event.shiftKey) {
+      if ((event.ctrlKey || event.metaKey) && event.keyCode === 83 && !event.altKey && !event.shiftKey) {
         // ctrl-s or command-s
         event.preventDefault()
         this.save()
-      } else if ((event.ctrlKey || event.metaKey) && event.keyCode == 90 && !event.altKey && !event.shiftKey) {
+      } else if ((event.ctrlKey || event.metaKey) && event.keyCode === 90 && !event.altKey && !event.shiftKey) {
         // ctrl-z or command-z
         event.preventDefault()
         this.editor.undo()
-      } else if ((event.ctrlKey || event.metaKey) && event.keyCode == 89 && !event.altKey && !event.shiftKey) {
+      } else if ((event.ctrlKey || event.metaKey) && event.keyCode === 89 && !event.altKey && !event.shiftKey) {
         // ctrl-y or command-y
         event.preventDefault()
         this.editor.redo()
